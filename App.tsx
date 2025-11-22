@@ -233,7 +233,7 @@ export default function App() {
         items: otherItems
     });
   }
-
+debugger;
   // --- Login View ---
   if (!user) {
     return (
