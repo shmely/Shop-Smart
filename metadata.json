@@ -1,0 +1,5 @@
+{
+  "name": "ShopSmart",
+  "description": "A smart, bilingual (Hebrew/English) shopping list application with shared lists, intelligent categorization via Gemini, and smart notifications.",
+  "requestFramePermissions": []
+}
