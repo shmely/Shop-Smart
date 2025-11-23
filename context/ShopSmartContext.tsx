@@ -1,9 +1,11 @@
+import { DEFAULT_GROUPS } from "@/configuration/constants";
 import {
   GroupId,
   Language,
   ShoppingList,
   User,
 } from "@/types";
+
 import { createContext, useState } from "react";
 
 type ShopSmartContextType = {
@@ -11,7 +13,7 @@ type ShopSmartContextType = {
   lang: Language;
   lists: ShoppingList[];
   activeListId?: string | null;
-  activeList: () => ShoppingList | null;
+  activeList: ShoppingList | null;
   setUser: React.Dispatch<
     React.SetStateAction<User | null>
   >;
@@ -40,7 +42,7 @@ const ShopSmartContext =
 
     lists: [],
     setLists: () => {},
-    activeList: () => null,
+    activeList: null,
   });
 
 const ShopSmartProvider = ({
@@ -80,6 +82,10 @@ const ShopSmartProvider = ({
           timestamp: Date.now(),
         },
       ],
+      customGroupOrder: {
+        [GroupId.DAIRY]: 1,
+        [GroupId.BAKERY]: 2,
+      },
     },
   ]);
   const [activeListId, setActiveListId] =
@@ -95,13 +101,10 @@ const ShopSmartProvider = ({
         setLists,
         activeListId,
         setActiveListId,
-        activeList: () => {
-          return (
-            lists.find(
-              (list) => list.id === activeListId
-            ) || null
-          );
-        },
+        activeList:
+          lists.find(
+            (list) => list.id === activeListId
+          ) || null,
       }}
     >
       {children}

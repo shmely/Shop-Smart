@@ -1,11 +1,11 @@
 import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { User,Language } from "../types";
+import { Language } from "../types";
 import { useContext } from "react";
 import { MOCK_USER,TRANSLATIONS } from '../configuration/constants';
 
 export default function Login() {
-  const { lang, setLang } = useContext(ShopSmartContext);
-  const { user, setUser } = useContext(ShopSmartContext);
+  const { lang, setLang,user,setUser } = useContext(ShopSmartContext);
+
   const t = TRANSLATIONS[lang];
   const handleLogin = () => {
     // Simulate Federated Identity Login
