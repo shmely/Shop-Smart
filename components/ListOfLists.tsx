@@ -1,50 +1,42 @@
-import { TRANSLATIONS } from "@/constants";
+import { TRANSLATIONS } from "@/configuration/constants";
+import { PlusIcon } from "@/configuration/icons";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { Language } from "@/types";
-import { useContext } from "react";
+import { ShoppingList,Notification } from "@/types";
+import { useContext, useState } from "react";
+import { NotificationToast } from "./NotificationToast";
 
 export default function ListOfLists() {
   const {
     lists,
-    user,
-    setLang,
+    setLists,
+    user,    
     lang,
-    setActiveListId,
-    activeListId,
+    setActiveListId    
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
-  // Placeholder for active list state
+  const [showCreateList, setShowCreateList] =
+    useState(false);
+  const [newListName, setNewListName] =
+    useState("");
+  const [notification, setNotification] =
+    useState<Notification | null>(null);
+
+  const handleCreateList = () => {
+    if (!newListName.trim() || !user) return;
+    const newList: ShoppingList = {
+      id: `list_${Date.now()}`,
+      name: newListName,
+      ownerId: user.id,
+      sharedWith: [],
+      items: [],
+    };
+    setLists([...lists, newList]);
+    setActiveListId(newList.id);
+    setShowCreateList(false);
+    setNewListName("");
+  };
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <img
-            src={user.avatarUrl}
-            alt="Profile"
-            className="w-10 h-10 rounded-full border-2 border-emerald-500"
-          />
-          <div>
-            <h2 className="font-bold text-gray-800 text-lg">
-              {t.welcome},{" "}
-              {user.name.split(" ")[0]}
-            </h2>
-          </div>
-        </div>
-        <button
-          onClick={() =>
-            setLang(
-              lang === Language.HE
-                ? Language.EN
-                : Language.HE
-            )
-          }
-          className="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full"
-        >
-          {lang === Language.HE ? "EN" : "עב"}
-        </button>
-      </header>
-
       <main className="p-4">
         <h3 className="text-xl font-bold text-gray-800 mb-4">
           {t.my_lists}

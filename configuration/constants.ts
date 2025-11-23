@@ -1,4 +1,4 @@
-import { Group, GroupId, Language } from './types';
+import { Group, GroupId, Language } from '../types';
 
 export const DEFAULT_GROUPS: Group[] = [
   { id: GroupId.FRUITS_VEG, order: 1, icon: '🍎', translationKey: 'fruits_veg' },

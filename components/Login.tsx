@@ -1,7 +1,7 @@
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { User,Language } from "../types";
 import { useContext } from "react";
-import { MOCK_USER,TRANSLATIONS } from '../constants';
+import { MOCK_USER,TRANSLATIONS } from '../configuration/constants';
 
 export default function Login() {
   const { lang, setLang } = useContext(ShopSmartContext);
