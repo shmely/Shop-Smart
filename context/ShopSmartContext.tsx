@@ -5,9 +5,11 @@ type ShopSmartContextType = {
   user: User | null;
   lang: Language;
   lists: ShoppingList[];
+  activeListId?: string | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setLang: React.Dispatch<React.SetStateAction<Language>>;
   setLists: React.Dispatch<React.SetStateAction<ShoppingList[]>>;
+  setActiveListId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const ShopSmartContext = createContext<ShopSmartContextType>({
@@ -15,8 +17,11 @@ const ShopSmartContext = createContext<ShopSmartContextType>({
   setUser: () => {},
   lang: Language.EN,
   setLang: () => {},
+  setActiveListId: () => {},
+  activeListId: null,
   lists: [],
-  setLists: () => {[
+  setLists: () => {
+    [
       {
         id: "1",
         name: "Grocery List",
@@ -49,7 +54,7 @@ const ShopSmartProvider = ({ children }: { children: React.ReactNode }) => {
   const [lang, setLang] = useState<Language>(Language.HE);
   const [lists, setLists] = useState<ShoppingList[]>([]);
   return (
-    <ShopSmartContext.Provider value={{ user, setUser, lang, setLang, lists, setLists }}>
+    <ShopSmartContext.Provider value={{ user, setUser, lang, setLang, lists, setLists, activeListId: null, setActiveListId: () => {}   }}>
       {children}
     </ShopSmartContext.Provider>
   );
