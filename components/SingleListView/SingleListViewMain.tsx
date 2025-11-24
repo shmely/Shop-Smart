@@ -7,7 +7,8 @@ import {
 } from "@/configuration/constants";
 import { CheckIcon } from "@/configuration/icons";
 import { GroupId } from "@/types";
-export default function SingleListView() {
+import SingleListViewFooter from "./SingleListViewFooter";
+export default function SingleListViewMain() {
   const {
     activeList,
     lang,
@@ -19,16 +20,13 @@ export default function SingleListView() {
 
   const sortedGroups = [...DEFAULT_GROUPS].sort(
     (a, b) => {
-      if (activeList) {
-        // If custom order exists for this list, use it, else default
-        const orderA =
-          activeList?.customGroupOrder?.[a.id] ??
-          a.order;
-        const orderB =
-          activeList?.customGroupOrder?.[b.id] ??
-          b.order;
-        return orderA - orderB;
-      }
+      // If custom order exists for this list, use it, else default
+      const orderA =
+        activeList?.items?.[a.id] ?? a.order;
+      const orderB =
+        activeList?.customGroupOrder?.[b.id] ??
+        b.order;
+      return orderA - orderB;
     }
   );
 
@@ -171,6 +169,7 @@ export default function SingleListView() {
           </div>
         ))
       )}
+      <SingleListViewFooter />
     </main>
   );
 }

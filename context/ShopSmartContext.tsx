@@ -67,7 +67,7 @@ const ShopSmartProvider = ({
       items: [
         {
           id: "1",
-          name: "Milk",
+          name: "חלב",
           groupId: GroupId.DAIRY,
           isChecked: false,
           addedBy: "user_123",
@@ -75,17 +75,21 @@ const ShopSmartProvider = ({
         },
         {
           id: "2",
-          name: "Bread",
+          name: "לחם",
           groupId: GroupId.BAKERY,
           isChecked: true,
           addedBy: "user_123",
           timestamp: Date.now(),
         },
-      ],
-      customGroupOrder: {
-        [GroupId.DAIRY]: 1,
-        [GroupId.BAKERY]: 2,
-      },
+        {
+          id: "3",
+          name: "עגבניה",
+          groupId: GroupId.FRUITS_VEG,
+          isChecked: true,
+          addedBy: "user_123",
+          timestamp: Date.now(),
+        },
+      ]
     },
   ]);
   const [activeListId, setActiveListId] =
