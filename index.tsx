@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ShopSmartProvider } from "./context/ShopSmartContext";
 import Header from "./components/Header";
+import { NotificationToast } from "./components/NotificationToast";
 
 const rootElement =
   document.getElementById("root");
@@ -18,6 +19,10 @@ root.render(
     <ShopSmartProvider>
       <Header />
       <App />
+      <NotificationToast
+              notification={notification}
+              onDismiss={() => setNotification(null)}
+            />
     </ShopSmartProvider>
   </React.StrictMode>
 );

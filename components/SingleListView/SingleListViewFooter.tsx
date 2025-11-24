@@ -129,7 +129,7 @@ export default function SingleListViewFooter() {
 
         // Reset
         pendingItemsRef.current = [];
-      }, 60000);
+      }, 1000);
   };
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-8 shadow-lg">

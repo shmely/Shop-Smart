@@ -26,6 +26,9 @@ type ShopSmartContextType = {
   setActiveListId: React.Dispatch<
     React.SetStateAction<string | null>
   >;
+  setNotification: React.Dispatch<
+    React.SetStateAction<Notification | null>
+  >;
 };
 
 const ShopSmartContext =
@@ -43,6 +46,9 @@ const ShopSmartContext =
     lists: [],
     setLists: () => {},
     activeList: null,
+    setNotification: (notification: Notification | null) => {
+    
+    },
   });
 
 const ShopSmartProvider = ({
@@ -104,6 +110,7 @@ const ShopSmartProvider = ({
         lists,
         setLists,
         activeListId,
+        setNotification: () => {},
         setActiveListId,
         activeList:
           lists.find(

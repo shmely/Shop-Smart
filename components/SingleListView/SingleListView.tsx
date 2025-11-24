@@ -11,10 +11,6 @@ export default function SingleListView() {
     useState<Notification | null>(null);
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <NotificationToast
-        notification={notification}
-        onDismiss={() => setNotification(null)}
-      />
       <SingleListViewHeader />
       <SingleListViewMain />
       <SingleListViewFooter />
