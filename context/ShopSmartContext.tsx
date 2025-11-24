@@ -4,6 +4,7 @@ import {
   Language,
   ShoppingList,
   User,
+  Notification,
 } from "@/types";
 
 import { createContext, useState } from "react";
@@ -14,6 +15,7 @@ type ShopSmartContextType = {
   lists: ShoppingList[];
   activeListId?: string | null;
   activeList: ShoppingList | null;
+  notification: Notification | null;
   setUser: React.Dispatch<
     React.SetStateAction<User | null>
   >;
@@ -38,16 +40,19 @@ const ShopSmartContext =
       user = user;
     },
     lang: null,
-    setLang: () => {},
-
+    setLang: (language: Language) => {
+      language = language;
+    },
     setActiveListId: () => {},
     activeListId: null,
-
+    notification: null,
     lists: [],
     setLists: () => {},
     activeList: null,
-    setNotification: (notification: Notification | null) => {
-    
+    setNotification: (
+      notification: Notification | null
+    ) => {
+      notification = notification;
     },
   });
 
@@ -62,6 +67,9 @@ const ShopSmartProvider = ({
   const [lang, setLang] = useState<Language>(
     Language.HE
   );
+
+  const [notification, setNotification] =
+    useState<Notification | null>(null);
   const [lists, setLists] = useState<
     ShoppingList[]
   >([
@@ -95,7 +103,7 @@ const ShopSmartProvider = ({
           addedBy: "user_123",
           timestamp: Date.now(),
         },
-      ]
+      ],
     },
   ]);
   const [activeListId, setActiveListId] =
@@ -109,9 +117,10 @@ const ShopSmartProvider = ({
         setLang,
         lists,
         setLists,
+        notification,
         activeListId,
-        setNotification: () => {},
         setActiveListId,
+        setNotification,
         activeList:
           lists.find(
             (list) => list.id === activeListId

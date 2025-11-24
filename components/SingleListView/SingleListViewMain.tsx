@@ -83,7 +83,7 @@ export default function SingleListViewMain() {
   };
 
   return (
-    <main className="flex-1 p-4 overflow-y-auto pb-32">
+    <main className="flex-1 p-4 pb-60 overflow-auto">
       {groupedItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-gray-400">
           <span className="text-6xl mb-4">
@@ -95,7 +95,7 @@ export default function SingleListViewMain() {
         groupedItems.map(({ group, items }) => (
           <div
             key={group.id}
-            className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100"
           >
             {/* Group Header */}
             <div className="bg-gray-50 px-4 py-2 flex items-center justify-between border-b border-gray-100">

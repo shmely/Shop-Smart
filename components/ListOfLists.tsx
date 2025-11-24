@@ -1,25 +1,22 @@
 import { TRANSLATIONS } from "@/configuration/constants";
 import { PlusIcon } from "@/configuration/icons";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { ShoppingList,Notification } from "@/types";
+import { ShoppingList } from "@/types";
 import { useContext, useState } from "react";
-import { NotificationToast } from "./NotificationToast";
 
 export default function ListOfLists() {
   const {
     lists,
     setLists,
-    user,    
+    user,
     lang,
-    setActiveListId    
+    setActiveListId,
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
   const [showCreateList, setShowCreateList] =
     useState(false);
   const [newListName, setNewListName] =
     useState("");
-  const [notification, setNotification] =
-    useState<Notification | null>(null);
 
   const handleCreateList = () => {
     if (!newListName.trim() || !user) return;
@@ -36,7 +33,7 @@ export default function ListOfLists() {
     setNewListName("");
   };
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-60 overflow-auto">
       <main className="p-4">
         <h3 className="text-xl font-bold text-gray-800 mb-4">
           {t.my_lists}
@@ -142,11 +139,6 @@ export default function ListOfLists() {
           </div>
         </div>
       )}
-
-      <NotificationToast
-        notification={notification}
-        onDismiss={() => setNotification(null)}
-      />
     </div>
   );
 }

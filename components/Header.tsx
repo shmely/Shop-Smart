@@ -10,7 +10,7 @@ export default function Header() {
   const t = TRANSLATIONS[lang];
   if (!user) return null;
   return (
-    <header className="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
+    <header className="bg-white shadow-sm p-4 top-0 z-10 flex justify-between items-center">
       <div className="flex items-center gap-3">
         <img
           src={user.avatarUrl}

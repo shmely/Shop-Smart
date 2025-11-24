@@ -9,13 +9,17 @@ import { ShopSmartContext } from "./context/ShopSmartContext";
 import ListOfLists from "./components/ListOfLists";
 import {} from "./configuration/icons";
 import SingleListView from "./components/SingleListView/SingleListView";
+import { NotificationToast } from "./components/NotificationToast";
 
 // --- Main App Component ---
 export default function App() {
   // --- State ---
-  const { lang, user, activeListId } = useContext(
-    ShopSmartContext
-  );
+  const {
+    lang,
+    user,
+    activeListId,
+    setNotification,
+  } = useContext(ShopSmartContext);
 
   useEffect(() => {
     document.documentElement.dir =
@@ -23,13 +27,18 @@ export default function App() {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  if (!user) return <Login />;
-
-  // home screen list of lists ---
-  if (!activeListId) {
-    return <ListOfLists />;
-  }
-
-  // --- Single List View ---
-  return <SingleListView />;
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {!user ? (
+        <Login />
+      ) : !activeListId ? (
+        <ListOfLists />
+      ) : (
+        <SingleListView />
+      )}
+      <NotificationToast
+        onDismiss={() => setNotification(null)}
+      />
+    </div>
+  );
 }

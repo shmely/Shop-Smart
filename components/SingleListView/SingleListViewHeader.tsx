@@ -25,7 +25,7 @@ export default function SingleListViewHeader() {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-10">
+    <header className="bg-white shadow-sm top-0 z-10">
       <div className="flex items-center justify-between p-4">
         <button
           onClick={() => setActiveListId(null)}

@@ -11,7 +11,7 @@ import {
 
 export default function SingleListViewFooter() {
   const {
-    activeList,
+    setNotification,
     lang,
     setLists,
     activeListId,
@@ -23,8 +23,6 @@ export default function SingleListViewFooter() {
     useState("");
   const [isCategorizing, setIsCategorizing] =
     useState(false);
-  const [notification, setNotification] =
-    useState<Notification | null>(null);
   const pendingItemsRef = useRef<string[]>([]);
   const notificationTimerRef = useRef<
     number | null
