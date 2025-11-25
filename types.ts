@@ -38,10 +38,10 @@ export interface ShoppingList {
   customGroupOrder?: Record<string, number>; // Allow users to override default order
 }
 
-export interface User {
+
+export interface ShopSmartUser {
   id: string;
   name: string;
-  email: string;
   avatarUrl: string;
 }
 

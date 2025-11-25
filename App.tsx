@@ -19,6 +19,7 @@ export default function App() {
     user,
     activeListId,
     setNotification,
+    isAuthLoading,
   } = useContext(ShopSmartContext);
 
   useEffect(() => {
@@ -26,6 +27,16 @@ export default function App() {
       lang === Language.HE ? "rtl" : "ltr";
     document.documentElement.lang = lang;
   }, [lang]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-xl font-semibold text-teal-600">
+          טוען נתוני אפליקציה...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

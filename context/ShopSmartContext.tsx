@@ -3,21 +3,32 @@ import {
   GroupId,
   Language,
   ShoppingList,
-  User,
   Notification,
+  ShopSmartUser,
 } from "@/types";
 
-import { createContext, useState } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import { auth, db } from "../firebase";
+import {
+  onAuthStateChanged,
+  User as FirebaseAuthUser,
+} from "firebase/auth";
 
 type ShopSmartContextType = {
-  user: User | null;
+  user: ShopSmartUser | null;
   lang: Language;
   lists: ShoppingList[];
   activeListId?: string | null;
   activeList: ShoppingList | null;
   notification: Notification | null;
+  isAuthLoading: boolean;
   setUser: React.Dispatch<
-    React.SetStateAction<User | null>
+    React.SetStateAction<ShopSmartUser | null>
   >;
   setLang: React.Dispatch<
     React.SetStateAction<Language>
@@ -36,7 +47,7 @@ type ShopSmartContextType = {
 const ShopSmartContext =
   createContext<ShopSmartContextType>({
     user: null,
-    setUser: (user: User) => {
+    setUser: (user: ShopSmartUser) => {
       user = user;
     },
     lang: null,
@@ -54,6 +65,7 @@ const ShopSmartContext =
     ) => {
       notification = notification;
     },
+    isAuthLoading: true,
   });
 
 const ShopSmartProvider = ({
@@ -61,13 +73,13 @@ const ShopSmartProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [user, setUser] = useState<User | null>(
-    null
-  );
+  const [user, setUser] =
+    useState<ShopSmartUser | null>(null);
   const [lang, setLang] = useState<Language>(
     Language.HE
   );
-
+  const [isAuthLoading, setIsAuthLoading] =
+    useState(true);
   const [notification, setNotification] =
     useState<Notification | null>(null);
   const [lists, setLists] = useState<
@@ -108,6 +120,35 @@ const ShopSmartProvider = ({
   ]);
   const [activeListId, setActiveListId] =
     useState<string | null>(null);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        if (firebaseUser) {
+          const customUserObject: ShopSmartUser =
+            {
+              id: firebaseUser.uid,
+              name:
+                firebaseUser.displayName ||
+                "משתמש",
+              avatarUrl:
+                firebaseUser.photoURL || "",
+            };
+          setUser(customUserObject);
+        } else {
+          setUser(null);
+        }
+        setIsAuthLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const activeList = useMemo(() => {
+      return lists.find((list) => list.id === activeListId) || null;
+  }, [lists, activeListId]);
+
   return (
     <ShopSmartContext.Provider
       value={{
@@ -121,10 +162,8 @@ const ShopSmartProvider = ({
         activeListId,
         setActiveListId,
         setNotification,
-        activeList:
-          lists.find(
-            (list) => list.id === activeListId
-          ) || null,
+        activeList,
+        isAuthLoading,
       }}
     >
       {children}

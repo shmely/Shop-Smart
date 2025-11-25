@@ -42,7 +42,10 @@ export const TRANSLATIONS = {
     cancel: 'ביטול',
     delete: 'מחק',
     copied: 'הקישור הועתק!',
-    share_instruction: 'שלח קישור זה לאחרים כדי לשתף:'
+    share_instruction: 'שלח קישור זה לאחרים כדי לשתף:',
+    login_error_cancelled: 'ההתחברות בוטלה על ידי המשתמש.',
+    login_error_general: 'שגיאת התחברות כללית. נסה שוב.',
+
   },
   [Language.EN]: {
     app_name: 'ShopSmart',
@@ -75,16 +78,13 @@ export const TRANSLATIONS = {
     cancel: 'Cancel',
     delete: 'Delete',
     copied: 'Link copied!',
-    share_instruction: 'Send this link to share:'
+    share_instruction: 'Send this link to share:',
+    login_error_cancelled: 'Login cancelled by user.',
+    login_error_general: 'General login error. Please try again.',
   }
 };
 
-export const MOCK_USER = {
-  id: 'user_123',
-  name: 'Yossi Cohen',
-  email: 'yossi@example.com',
-  avatarUrl: 'https://picsum.photos/100/100'
-};
+
 
 // Simulating a second user for notification testing
 export const OTHER_USER = {
