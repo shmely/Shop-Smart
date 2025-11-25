@@ -1,86 +1,10 @@
-import { useContext } from "react";
-import { ShopSmartContext } from "@/context/ShopSmartContext";
-import {
-  DEFAULT_GROUPS,
-  TRANSLATIONS,
-  OTHER_USER,
-} from "@/configuration/constants";
+import { OTHER_USER } from "@/configuration/constants";
 import { CheckIcon } from "@/configuration/icons";
-import { GroupId } from "@/types";
 import SingleListViewFooter from "./SingleListViewFooter";
+import { useSingleListViewMain } from "./useSingleListViewMain";
 export default function SingleListViewMain() {
-  const {
-    activeList,
-    lang,
-    setLists,
-    activeListId,
-    user,
-  } = useContext(ShopSmartContext);
-  const t = TRANSLATIONS[lang];
-
-  const sortedGroups = [...DEFAULT_GROUPS].sort(
-    (a, b) => {
-      // If custom order exists for this list, use it, else default
-      const orderA =
-        activeList?.items?.[a.id] ?? a.order;
-      const orderB =
-        activeList?.customGroupOrder?.[b.id] ??
-        b.order;
-      return orderA - orderB;
-    }
-  );
-
-  const groupedItems = activeList
-    ? sortedGroups
-        .map((group) => {
-          const itemsInGroup =
-            activeList.items.filter(
-              (i) => i.groupId === group.id
-            );
-          return {
-            group,
-            items: itemsInGroup,
-          };
-        })
-        .filter((g) => g.items.length > 0)
-    : [];
-
-  const otherItems = activeList
-    ? activeList.items.filter(
-        (i) =>
-          !sortedGroups.find(
-            (g) => g.id === i.groupId
-          )
-      )
-    : [];
-  if (otherItems.length > 0 && activeList) {
-    groupedItems.push({
-      group: DEFAULT_GROUPS.find(
-        (g) => g.id === GroupId.OTHER
-      )!,
-      items: otherItems,
-    });
-  }
-
-  const toggleItem = (itemId: string) => {
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          const updatedItems = list.items.map(
-            (item) =>
-              item.id === itemId
-                ? {
-                    ...item,
-                    isChecked: !item.isChecked,
-                  }
-                : item
-          );
-          return { ...list, items: updatedItems };
-        }
-        return list;
-      })
-    );
-  };
+  const { t, groupedItems, toggleItem, user } =
+    useSingleListViewMain();
 
   return (
     <main className="flex-1 p-4 pb-60 overflow-auto">

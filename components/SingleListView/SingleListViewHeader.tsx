@@ -1,31 +1,21 @@
-import { TRANSLATIONS } from "@/configuration/constants";
 import {
   ArrowLeftIcon,
   CogIcon,
   ShareIcon,
 } from "@/configuration/icons";
-import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { useContext, useState } from "react";
+import { useSingleListViewHeader } from "./useSingleListViewHeader";
 
 export default function SingleListViewHeader() {
   const {
     activeList,
-    lang,
-    activeListId,
+    t,
     setActiveListId,
-  } = useContext(ShopSmartContext);
-  const t = TRANSLATIONS[lang];
-  const [showSettings, setShowSettings] =
-    useState(false);
-
-  const handleShare = () => {
-    const url = `${window.location.origin}/#list/${activeListId}`;
-    navigator.clipboard.writeText(url);
-    alert(`${TRANSLATIONS[lang].copied}\n${url}`);
-  };
-
+    showSettings,
+    setShowSettings,
+    handleShare,
+  } = useSingleListViewHeader();
   return (
-    <header className="bg-white shadow-sm top-0 z-10">
+    <header className="bg-white shadow-sm top-0 z-10 relative">
       <div className="flex items-center justify-between p-4">
         <button
           onClick={() => setActiveListId(null)}

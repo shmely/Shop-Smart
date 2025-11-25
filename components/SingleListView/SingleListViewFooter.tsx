@@ -1,134 +1,14 @@
-import { TRANSLATIONS } from "@/configuration/constants";
 import { PlusIcon } from "@/configuration/icons";
-import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { categorizeItem } from "@/services/geminiService";
-import { ListItem, Notification } from "@/types";
-import {
-  useContext,
-  useRef,
-  useState,
-} from "react";
+import { useFooterLogic } from "./useFooterLogic";
 
 export default function SingleListViewFooter() {
   const {
-    setNotification,
-    lang,
-    setLists,
-    activeListId,
-    lists,
-    user,
-  } = useContext(ShopSmartContext);
-  const t = TRANSLATIONS[lang];
-  const [newItemText, setNewItemText] =
-    useState("");
-  const [isCategorizing, setIsCategorizing] =
-    useState(false);
-  const pendingItemsRef = useRef<string[]>([]);
-  const notificationTimerRef = useRef<
-    number | null
-  >(null);
-
-  const triggerSimulatedNotification = (
-    items: string[]
-  ) => {
-    const activeList = lists.find(
-      (l) => l.id === activeListId
-    );
-    const listName = activeList
-      ? activeList.name
-      : "Shopping List";
-
-    let message = "";
-
-    if (items.length === 1) {
-      message = `${items[0]} ${t.notification_single_item} ${listName}`;
-    } else {
-      message = `${t.notification_new_items} ${listName}`;
-    }
-
-    setNotification({
-      id: Date.now().toString(),
-      message,
-      listName,
-      timestamp: Date.now(),
-    });
-  };
-
-  const handleAddItem = async () => {
-    if (
-      !newItemText.trim() ||
-      !activeListId ||
-      !user
-    )
-      return;
-
-    const currentText = newItemText;
-    setNewItemText(""); // Optimistic UI clear
-    setIsCategorizing(true);
-
-    // 1. Gemini Categorization
-    const detectedGroupId = await categorizeItem(
-      currentText,
-      lang
-    );
-
-    const newItem: ListItem = {
-      id: Date.now().toString(),
-      name: currentText,
-      groupId: detectedGroupId,
-      isChecked: false,
-      addedBy: user.id,
-      timestamp: Date.now(),
-    };
-
-    // 2. Update List State
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          return {
-            ...list,
-            items: [...list.items, newItem],
-          };
-        }
-        return list;
-      })
-    );
-
-    setIsCategorizing(false);
-
-    // 3. Notification Logic (Debounce)
-    // In a real app, this logic happens on the receiver's device or server.
-    // Here we simulate "sending" it, and we'll trigger a notification
-    // as if WE were the other user receiving it (for demo purposes).
-
-    // Add item name to pending queue
-    pendingItemsRef.current.push(currentText);
-
-    // Clear existing timer
-    if (notificationTimerRef.current) {
-      window.clearTimeout(
-        notificationTimerRef.current
-      );
-    }
-
-    // Set new timer for 1 minute (60000ms)
-    notificationTimerRef.current =
-      window.setTimeout(() => {
-        // This part would actually happen on the OTHER user's device in reality.
-        console.log(
-          "Dispatching notification for items:",
-          pendingItemsRef.current
-        );
-
-        // Only trigger if we pretend to be the other user, OR just show it for feedback
-        triggerSimulatedNotification([
-          ...pendingItemsRef.current,
-        ]);
-
-        // Reset
-        pendingItemsRef.current = [];
-      }, 1000);
-  };
+    t,
+    newItemText,
+    setNewItemText,
+    isCategorizing,
+    handleAddItem,
+  } = useFooterLogic();
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-8 shadow-lg">
       <div className="max-w-3xl mx-auto relative">
