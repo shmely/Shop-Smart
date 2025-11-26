@@ -87,7 +87,7 @@ const ShopSmartProvider = ({
   >([
     {
       id: "1",
-      name: "Grocery List",
+      name: "רשימת קניות לסופר",
       ownerId: "user_123",
       sharedWith: ["user_456"],
       items: [

@@ -49,7 +49,7 @@ export default function ListOfLists() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl">
-                  {list.id.includes("grocery")
+                  {list.name.toLocaleLowerCase().includes("grocery") || list.name.toLocaleLowerCase().includes("סופר")
                     ? "🛒"
                     : "⛺"}
                 </div>
