@@ -3,7 +3,7 @@ import React, {
   useContext,
 } from "react";
 import { Language } from "./types";
-
+import { TRANSLATIONS } from "./configuration/constants";
 import Login from "./components/Login";
 import { ShopSmartContext } from "./context/ShopSmartContext";
 import ListOfLists from "./components/ListOfLists";
@@ -21,7 +21,7 @@ export default function App() {
     setNotification,
     isAuthLoading,
   } = useContext(ShopSmartContext);
-
+  const t = TRANSLATIONS[lang];
   useEffect(() => {
     document.documentElement.dir =
       lang === Language.HE ? "rtl" : "ltr";
@@ -32,7 +32,7 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <p className="text-xl font-semibold text-teal-600">
-          טוען נתוני אפליקציה...
+          {t.loadingMessage}
         </p>
       </div>
     );

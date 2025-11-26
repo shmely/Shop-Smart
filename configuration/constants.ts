@@ -45,6 +45,8 @@ export const TRANSLATIONS = {
     share_instruction: 'שלח קישור זה לאחרים כדי לשתף:',
     login_error_cancelled: 'ההתחברות בוטלה על ידי המשתמש.',
     login_error_general: 'שגיאת התחברות כללית. נסה שוב.',
+    loadingMessage: 'טוען, אנא המתן...',
+    guest: 'אורח',
 
   },
   [Language.EN]: {
@@ -81,6 +83,8 @@ export const TRANSLATIONS = {
     share_instruction: 'Send this link to share:',
     login_error_cancelled: 'Login cancelled by user.',
     login_error_general: 'General login error. Please try again.',
+    loadingMessage: 'Loading, please wait...',
+    guest: 'Guest',
   }
 };
 

@@ -54,28 +54,26 @@ export default function Login() {
         
         id: firebaseUser.uid,
        
-        name: firebaseUser.displayName || "משתמש",
+        name: firebaseUser.displayName || t.guest,
         
         avatarUrl: firebaseUser.photoURL || "",
       };
 
-      // 3. עדכון מצב המשתמש ב-Context.
-      // TypeScript עכשיו מאשר שהאובייקט customUserObject תואם למה ש-setUser מצפה.
-      setUser(customUserObject as any); // משתמשים ב-as any כדי לאפשר גמישות ב-Context, אך מומלץ לתקן את הטיפוסים ב-Context
-
+      
+      setUser(customUserObject as any);
       console.log(
         "Logged in UID:",
         firebaseUser.uid
       );
     } catch (error) {
-      // טיפול בשגיאות לוגין
+     
       console.error(
         "Login Error:",
         error.code,
         error.message
       );
 
-      // *** תיקון שגיאות 2339: שימוש במשתנה t המתוקן ***
+      
       let errorMessage = t.login_error_general;
       if (
         error.code === "auth/popup-closed-by-user"
@@ -83,8 +81,7 @@ export default function Login() {
         errorMessage = t.login_error_cancelled;
       }
       console.log(`Error: ${errorMessage}`);
-
-      // חשוב: אם הלוגין נכשל, נרצה לוודא שהמשתמש עדיין null ב-Context
+      
       setUser(null);
     }
   };
@@ -99,7 +96,7 @@ export default function Login() {
       </p>
       <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm">
         <button
-          onClick={handleFirebaseLogin} // החלפת handleLogin ב-handleFirebaseLogin
+          onClick={handleFirebaseLogin} 
           className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition shadow-sm"
         >
           <img
