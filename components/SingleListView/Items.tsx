@@ -6,8 +6,8 @@ interface Props {
   items: ListItem[];
 }
 export default function Items({ items }: Props) {
-  const { toggleItem, user } =
-    useSingleListViewMain();
+    const {  toggleItem, user } =
+        useSingleListViewMain();
   return (
     <div className="divide-y divide-gray-100">
       {items

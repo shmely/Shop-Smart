@@ -36,7 +36,7 @@ export default function SingleListViewMain() {
               />
 
               {/* Items to buy */}
-              <Items items={items} />
+              <Items items={items.filter((item) => !item.isChecked)} />
             </div>
           ))
       )}
@@ -61,7 +61,7 @@ export default function SingleListViewMain() {
             />
 
             {/* Items */}
-            <Items items={items} />
+            <Items items={items.filter((item) => item.isChecked)} />
           </div>
         ))}
       <SingleListViewFooter />
