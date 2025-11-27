@@ -7,7 +7,7 @@ interface Props {
   group: Group;
   itemsCount: number;
 }
-export default function GroupHeader({ group, itemsCount }: Props) {
+export default function SingleListViewGroupHeader({ group, itemsCount }: Props) {
   const { lang } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
   return (

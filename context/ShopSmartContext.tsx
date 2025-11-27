@@ -95,7 +95,7 @@ const ShopSmartProvider = ({
           id: "1",
           name: "חלב",
           groupId: GroupId.DAIRY,
-          isChecked: false,
+          isChecked: true,
           addedBy: "user_123",
           timestamp: Date.now(),
         },

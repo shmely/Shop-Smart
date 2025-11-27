@@ -1,7 +1,7 @@
 import SingleListViewFooter from "./SingleListViewFooter";
 import { useSingleListViewMain } from "./useSingleListViewMain";
-import GroupHeader from "./GroupHeader";
-import Items from "./Items";
+import SingleListViewGroupHeader from "./SingleListViewGroupHeader";
+import SingleListViewItems from "./SingleListViewItems";
 export default function SingleListViewMain() {
   const { t, groupedItems  } =
     useSingleListViewMain();
@@ -30,13 +30,13 @@ export default function SingleListViewMain() {
               key={group.id}
               className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100"
             >
-              <GroupHeader
+              <SingleListViewGroupHeader
                 group={group}
                 itemsCount={items.length}
               />
 
               {/* Items to buy */}
-              <Items items={items.filter((item) => !item.isChecked)} />
+              <SingleListViewItems items={items.filter((item) => !item.isChecked)} />
             </div>
           ))
       )}
@@ -55,13 +55,13 @@ export default function SingleListViewMain() {
             className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100"
           >
             {/* Group Header */}
-            <GroupHeader
+            <SingleListViewGroupHeader
               group={group}
               itemsCount={items.length}
             />
 
             {/* Items */}
-            <Items items={items.filter((item) => item.isChecked)} />
+            <SingleListViewItems items={items.filter((item) => item.isChecked)} />
           </div>
         ))}
       <SingleListViewFooter />
