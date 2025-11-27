@@ -10,7 +10,8 @@ export enum GroupId {
   FROZEN = 'frozen',
   DRY_GOODS = 'dry_goods',
   CLEANING = 'cleaning',
-  OTHER = 'other'
+  OTHER = 'other',
+  BUTCHER = "BUTCHER"
 }
 
 export interface Group {
@@ -50,4 +51,10 @@ export interface Notification {
   message: string;
   listName: string;
   timestamp: number;
+}
+
+export interface ProductCacheItem {
+  name: string;
+  groupId: GroupId;
+  addedAt: number;
 }

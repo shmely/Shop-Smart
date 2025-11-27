@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ShopSmartProvider } from "./context/ShopSmartContext";
-import Header from "./components/Header";
+import Header from "./components/Header/Header";
 
 const rootElement =
   document.getElementById("root");

@@ -1,7 +1,7 @@
 import { OTHER_USER } from "@/configuration/constants";
 import { CheckIcon } from "@/configuration/icons";
 import { ListItem } from "@/types";
-import { useSingleListViewMain } from "./useSingleListViewMain";
+import { useSingleListViewMain } from "./hooks/useSingleListViewMain";
 interface Props {
   items: ListItem[];
 }

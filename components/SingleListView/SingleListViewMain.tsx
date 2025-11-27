@@ -1,5 +1,5 @@
 import SingleListViewFooter from "./SingleListViewFooter";
-import { useSingleListViewMain } from "./useSingleListViewMain";
+import { useSingleListViewMain } from "./hooks/useSingleListViewMain";
 import SingleListViewGroupHeader from "./SingleListViewGroupHeader";
 import SingleListViewItems from "./SingleListViewItems";
 export default function SingleListViewMain() {

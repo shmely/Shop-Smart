@@ -3,7 +3,7 @@ import {
   CogIcon,
   ShareIcon,
 } from "@/configuration/icons";
-import { useSingleListViewHeader } from "./useSingleListViewHeader";
+import { useSingleListViewHeader } from "./hooks/useSingleListViewHeader";
 
 export default function SingleListViewHeader() {
   const {

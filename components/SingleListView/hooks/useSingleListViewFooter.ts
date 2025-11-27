@@ -1,10 +1,11 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { categorizeItem } from "@/services/geminiService";
+import { ProductCacheItemsService } from '../../../services/ProductCacheItemService'
 import { ListItem } from "@/types";
 import { TRANSLATIONS } from "@/configuration/constants";
 
-export function useFooterLogic() {
+export function useSingleListViewFooter() {
   const {
     setNotification,
     lang,
@@ -18,6 +19,14 @@ export function useFooterLogic() {
   const [isCategorizing, setIsCategorizing] = useState(false);
   const pendingItemsRef = useRef<string[]>([]);
   const notificationTimerRef = useRef<number | null>(null);
+
+  // Initialize cache on first load
+  useEffect(() => {
+    ProductCacheItemsService.loadFromStorage();
+    if (ProductCacheItemsService.getAllProductNames().length === 0) {
+      ProductCacheItemsService.initializeDefaults();
+    }
+  }, []);
 
   const triggerSimulatedNotification = (items: string[]) => {
     const activeList = lists.find((l) => l.id === activeListId);
@@ -38,10 +47,17 @@ export function useFooterLogic() {
     });
   };
 
-  const handleAddItem = async () => {
-    if (!newItemText.trim() || !activeListId || !user) return;
+  const handleAddItem = async (itemName?: string) => {
+    const currentText = itemName || newItemText;
+    if (!currentText.trim() || !activeListId || !user) return;
+    const activeList = lists.find(list => list.id === activeListId);
+    if (!activeList) return;
 
-    const currentText = newItemText;
+    if (activeList.items.some(item => item.name.toLowerCase() === currentText.toLowerCase())) {
+      setNewItemText("");
+      return;
+    }
+    
     setNewItemText("");
     setIsCategorizing(true);
 

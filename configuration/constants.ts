@@ -7,7 +7,9 @@ export const DEFAULT_GROUPS: Group[] = [
   { id: GroupId.FROZEN, order: 4, icon: '🧊', translationKey: 'frozen' },
   { id: GroupId.DRY_GOODS, order: 5, icon: '🍝', translationKey: 'dry_goods' },
   { id: GroupId.CLEANING, order: 6, icon: '🧼', translationKey: 'cleaning' },
-  { id: GroupId.OTHER, order: 99, icon: '📦', translationKey: 'other' },
+  { id: GroupId.BUTCHER, order: 7, icon: '🥩', translationKey: 'butcher' },
+  { id: GroupId.OTHER, order: 99, icon: '📦', translationKey: 'other' }
+
 ];
 
 export const TRANSLATIONS = {
@@ -47,6 +49,9 @@ export const TRANSLATIONS = {
     login_error_general: 'שגיאת התחברות כללית. נסה שוב.',
     loadingMessage: 'טוען, אנא המתן...',
     guest: 'אורח',
+    butcher: 'קצבייה',
+    change_language: "שנה שפה",
+    
 
   },
   [Language.EN]: {
@@ -85,6 +90,7 @@ export const TRANSLATIONS = {
     login_error_general: 'General login error. Please try again.',
     loadingMessage: 'Loading, please wait...',
     guest: 'Guest',
+    change_language: "Change Language",
   }
 };
 
