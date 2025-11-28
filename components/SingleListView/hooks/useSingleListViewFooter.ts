@@ -70,6 +70,7 @@ export function useSingleListViewFooter() {
       isChecked: false,
       addedBy: user.id,
       timestamp: Date.now(),
+      quantity: 1,
     };
 
     setLists((prev) =>

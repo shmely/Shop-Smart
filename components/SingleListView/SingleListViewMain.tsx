@@ -48,7 +48,7 @@ export default function SingleListViewMain() {
           .map(({ group, items }) => (
             <div
               key={group.id}
-              className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100"
+              className="mb-2 bg-white rounded-2xl shadow-sm border border-gray-100"
             >
               <SingleListViewGroupHeader
                 group={group}

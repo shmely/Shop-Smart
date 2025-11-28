@@ -1,4 +1,4 @@
-import { DEFAULT_GROUPS } from "@/configuration/constants";
+import { useMemo, useContext } from "react";
 import {
   GroupId,
   Language,
@@ -11,13 +11,10 @@ import {
   createContext,
   useState,
   useEffect,
-  useMemo,
+  ReactNode,
 } from "react";
 import { auth, db } from "../firebase";
-import {
-  onAuthStateChanged,
-  User as FirebaseAuthUser,
-} from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 
 type ShopSmartContextType = {
   user: ShopSmartUser | null;
@@ -44,113 +41,142 @@ type ShopSmartContextType = {
   >;
 };
 
-const ShopSmartContext =
-  createContext<ShopSmartContextType>({
-    user: null,
-    setUser: (user: ShopSmartUser) => {
-      user = user;
-    },
-    lang: null,
-    setLang: (language: Language) => {
-      language = language;
-    },
-    setActiveListId: () => {},
-    activeListId: null,
-    notification: null,
-    lists: [],
-    setLists: () => {},
-    activeList: null,
-    setNotification: (
-      notification: Notification | null
-    ) => {
-      notification = notification;
-    },
-    isAuthLoading: true,
-  });
+export const ShopSmartContext = createContext<
+  ShopSmartContextType | undefined
+>(undefined);
 
-const ShopSmartProvider = ({
+interface ShopSmartProviderProps {
+  children: ReactNode;
+}
+
+const STORAGE_KEYS = {
+  LISTS: "shop-smart-lists",
+  USER: "shop-smart-user",
+  ACTIVE_LIST_ID: "shop-smart-active-list-id",
+  LANGUAGE: "shop-smart-language",
+};
+
+export function ShopSmartProvider({
   children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const [user, setUser] =
-    useState<ShopSmartUser | null>(null);
-  const [lang, setLang] = useState<Language>(
-    Language.HE
-  );
-  const [isAuthLoading, setIsAuthLoading] =
-    useState(true);
-  const [notification, setNotification] =
-    useState<Notification | null>(null);
+}: ShopSmartProviderProps) {
+  // Load initial data from localStorage
   const [lists, setLists] = useState<
     ShoppingList[]
-  >([
-    {
-      id: "1",
-      name: "רשימת קניות לסופר",
-      ownerId: "user_123",
-      sharedWith: ["user_456"],
-      items: [
-        {
-          id: "1",
-          name: "חלב",
-          groupId: GroupId.DAIRY,
-          isChecked: false,
-          addedBy: "user_123",
-          timestamp: Date.now(),
-          quantity: 2,
-        },
-        {
-          id: "2",
-          name: "לחם",
-          groupId: GroupId.BAKERY,
-          isChecked: false,
-          addedBy: "user_123",
-          timestamp: Date.now(),
-          quantity: 1,
-        },
-        {
-          id: "3",
-          name: "עגבניה",
-          groupId: GroupId.FRUITS_VEG,
-          isChecked: true,
-          addedBy: "user_123",
-          timestamp: Date.now(),
-          quantity: 3,
-        },
-      ],
-    },
-  ]);
-  const [activeListId, setActiveListId] =
-    useState<string | null>(null);
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (firebaseUser) => {
-        if (firebaseUser) {
-          const customUserObject: ShopSmartUser =
-            {
-              id: firebaseUser.uid,
-              name:
-                firebaseUser.displayName ||
-                "משתמש",
-              avatarUrl:
-                firebaseUser.photoURL || "",
-            };
-          setUser(customUserObject);
-        } else {
-          setUser(null);
-        }
-        setIsAuthLoading(false);
-      }
-    );
+  >(() => {
+    try {
+      const savedLists = localStorage.getItem(
+        STORAGE_KEYS.LISTS
+      );
+      return savedLists
+        ? JSON.parse(savedLists)
+        : [];
+    } catch (error) {
+      console.error(
+        "Error loading lists from localStorage:",
+        error
+      );
+      return [];
+    }
+  });
 
-    return () => unsubscribe();
-  }, []);
+  const [user, setUser] =
+    useState<ShopSmartUser | null>(() => {
+      try {
+        const savedUser = localStorage.getItem(
+          STORAGE_KEYS.USER
+        );
+        return savedUser
+          ? JSON.parse(savedUser)
+          : null;
+      } catch (error) {
+        console.error(
+          "Error loading user from localStorage:",
+          error
+        );
+        return null;
+      }
+    });
+
+  const [activeListId, setActiveListId] =
+    useState<string | null>(() => {
+      try {
+        return localStorage.getItem(
+          STORAGE_KEYS.ACTIVE_LIST_ID
+        );
+      } catch (error) {
+        console.error(
+          "Error loading active list ID from localStorage:",
+          error
+        );
+        return null;
+      }
+    });
+
+  const [lang, setLang] = useState<Language>(
+    () => {
+      try {
+        const savedLang = localStorage.getItem(
+          STORAGE_KEYS.LANGUAGE
+        );
+        return savedLang
+          ? JSON.parse(savedLang)
+          : Language.HE;
+      } catch (error) {
+        console.error(
+          "Error loading language from localStorage:",
+          error
+        );
+        return Language.HE;
+      }
+    }
+  );
+
+  // Save lists to localStorage whenever they change
+  useEffect(() => {
+    console.log(
+      "📦 Saving lists to localStorage:",
+      lists
+    );
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.LISTS,
+        JSON.stringify(lists)
+      );
+    } catch (error) {
+      console.error(
+        "Error saving lists to localStorage:",
+        error
+      );
+    }
+  }, [lists]);
+
+  // Save language to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.LANGUAGE,
+        JSON.stringify(lang)
+      );
+    } catch (error) {
+      console.error(
+        "Error saving language to localStorage:",
+        error
+      );
+    }
+  }, [lang]);
 
   const activeList = useMemo(() => {
-      return lists.find((list) => list.id === activeListId) || null;
+    return (
+      lists.find(
+        (list) => list.id === activeListId
+      ) || null
+    );
   }, [lists, activeListId]);
+
+  const [notification, setNotification] =
+    useState<Notification | null>(null);
+  const [isAuthLoading, setIsAuthLoading] =
+    useState<boolean>(false);
 
   return (
     <ShopSmartContext.Provider
@@ -172,5 +198,4 @@ const ShopSmartProvider = ({
       {children}
     </ShopSmartContext.Provider>
   );
-};
-export { ShopSmartContext, ShopSmartProvider };
+}

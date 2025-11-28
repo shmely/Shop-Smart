@@ -15,6 +15,22 @@ export function useSingleListViewMain() {
   const t = TRANSLATIONS[lang];
   const [collapsedDoneItems, setCollapsedDoneItems] = useState<boolean>(true);
 
+  const updateItemQuantity = (itemId: string, quantity: number) => {
+  setLists((prev) =>
+    prev.map((list) => {
+      if (list.id === activeListId) {
+        const updatedItems = list.items.map((item) =>
+          item.id === itemId
+            ? { ...item, quantity: Math.max(1, quantity) } // Ensure minimum quantity of 1
+            : item
+        );
+        return { ...list, items: updatedItems };
+      }
+      return list;
+    })
+  );
+};
+
   const sortedGroups = useMemo(() => {
     return [...DEFAULT_GROUPS].sort((a, b) => {
       const orderA = activeList?.items?.[a.id] ?? a.order;
@@ -76,5 +92,6 @@ export function useSingleListViewMain() {
     activeList,
     collapsedDoneItems,
     setCollapsedDoneItems,
+    updateItemQuantity
   };
 }
