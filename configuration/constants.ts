@@ -1,3 +1,4 @@
+import { it } from 'node:test';
 import { Group, GroupId, Language } from '../types';
 
 export const DEFAULT_GROUPS: Group[] = [
@@ -51,6 +52,10 @@ export const TRANSLATIONS = {
     guest: 'אורח',
     butcher: 'קצבייה',
     change_language: "שנה שפה",
+    done_items: 'פריטים שהושלמו',
+    items: 'פריטים',
+    item: 'פריט',
+    one: 'אחד',
     
 
   },
@@ -91,6 +96,10 @@ export const TRANSLATIONS = {
     loadingMessage: 'Loading, please wait...',
     guest: 'Guest',
     change_language: "Change Language",
+    done_items: 'Done Items',
+    items: 'Items',
+    item: 'Item',
+    one: 'One',
   }
 };
 

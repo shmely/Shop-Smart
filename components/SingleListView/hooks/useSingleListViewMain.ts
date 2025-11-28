@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { DEFAULT_GROUPS, TRANSLATIONS, OTHER_USER } from "@/configuration/constants";
 import { GroupId } from "@/types";
@@ -13,6 +13,7 @@ export function useSingleListViewMain() {
   } = useContext(ShopSmartContext);
 
   const t = TRANSLATIONS[lang];
+  const [collapsedDoneItems, setCollapsedDoneItems] = useState<boolean>(true);
 
   const sortedGroups = useMemo(() => {
     return [...DEFAULT_GROUPS].sort((a, b) => {
@@ -65,10 +66,15 @@ export function useSingleListViewMain() {
     );
   };
 
+ 
+
   return {
     t,
     groupedItems,
     toggleItem,
     user,
+    activeList,
+    collapsedDoneItems,
+    setCollapsedDoneItems,
   };
 }
