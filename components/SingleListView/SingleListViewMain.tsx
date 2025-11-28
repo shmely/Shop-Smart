@@ -65,11 +65,11 @@ export default function SingleListViewMain() {
           ))
       )}
       <div className="flex flex-col items-center border-t border-gray-400 my-6">
-        <span className="font-bold text-gray-700 text-xl ">
+        <span className="text-gray-700 text-xl ">
           {t.done_items}
         </span>
         <div className="flex text-gray-500 justify-between align-center pe-4">
-          <span className="font  text-me mx-auto">
+          <span className="font text-me mx-auto">
             {doneItemsCount === 1
               ? `${t.item} ${t.one}`
               : doneItemsCount > 1
