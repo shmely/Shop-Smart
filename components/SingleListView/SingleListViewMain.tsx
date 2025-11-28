@@ -64,11 +64,11 @@ export default function SingleListViewMain() {
             </div>
           ))
       )}
-      <div className="flex flex-col items-center border-t border-gray-400 my-6">
+      <div className="flex flex-col items-center border-t border-gray-400 my-6 px-4">
         <span className="text-gray-700 text-xl ">
           {t.done_items}
         </span>
-        <div className="flex text-gray-500 justify-between align-center pe-4">
+        <div className="flex text-gray-500 justify-between align-center w-full ">
           <span className="font text-me mx-auto">
             {doneItemsCount === 1
               ? `${t.item} ${t.one}`
@@ -76,30 +76,34 @@ export default function SingleListViewMain() {
               ? `${doneItemsCount} ${t.items}`
               : ""}
           </span>
-          {collapsedDoneItems ? (
-            <button
-              type="button"
-              onClick={() =>
-                setCollapsedDoneItems(
-                  !collapsedDoneItems
-                )
-              }
-              className="focus:outline-none"
-            >
-              <ChevronUpIcon />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() =>
-                setCollapsedDoneItems(
-                  !collapsedDoneItems
-                )
-              }
-              className="focus:outline-none"
-            >
-              <ChevronDownIcon />
-            </button>
+          {doneItemsCount > 0 && (
+            <div className="flex">
+              {collapsedDoneItems ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollapsedDoneItems(
+                      !collapsedDoneItems
+                    )
+                  }
+                  className="focus:outline-none"
+                >
+                  <ChevronUpIcon />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollapsedDoneItems(
+                      !collapsedDoneItems
+                    )
+                  }
+                  className="focus:outline-none"
+                >
+                  <ChevronDownIcon />
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

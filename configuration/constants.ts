@@ -102,13 +102,3 @@ export const TRANSLATIONS = {
     one: 'One',
   }
 };
-
-
-
-// Simulating a second user for notification testing
-export const OTHER_USER = {
-  id: 'user_456',
-  name: 'Sarah Levy',
-  email: 'sarah@example.com',
-  avatarUrl: 'https://picsum.photos/101/101'
-};

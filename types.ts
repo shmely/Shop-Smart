@@ -28,6 +28,7 @@ export interface ListItem {
   isChecked: boolean;
   addedBy: string; // User ID
   timestamp: number;
+  quantity: number;
 }
 
 export interface ShoppingList {

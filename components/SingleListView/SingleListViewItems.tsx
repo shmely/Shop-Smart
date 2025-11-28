@@ -1,4 +1,3 @@
-import { OTHER_USER } from "@/configuration/constants";
 import { CheckIcon } from "@/configuration/icons";
 import { ListItem } from "@/types";
 import { useSingleListViewMain } from "./hooks/useSingleListViewMain";
@@ -38,21 +37,6 @@ export default function SingleListViewItems({
           >
             {item.name}
           </span>
-          {/* Avatar of who added it */}
-          <img
-            src={
-              item.addedBy === user.id
-                ? user.avatarUrl
-                : OTHER_USER.avatarUrl
-            }
-            alt="User"
-            className="w-5 h-5 rounded-full opacity-50"
-            title={
-              item.addedBy === user.id
-                ? "You"
-                : "Other User"
-            }
-          />
         </div>
       ))}
     </div>

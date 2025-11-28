@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { DEFAULT_GROUPS, TRANSLATIONS, OTHER_USER } from "@/configuration/constants";
+import { DEFAULT_GROUPS, TRANSLATIONS } from "@/configuration/constants";
 import { GroupId } from "@/types";
 
 export function useSingleListViewMain() {
@@ -66,7 +66,7 @@ export function useSingleListViewMain() {
     );
   };
 
- 
+
 
   return {
     t,
