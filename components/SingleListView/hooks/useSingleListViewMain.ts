@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { DEFAULT_GROUPS, TRANSLATIONS } from "@/configuration/constants";
-import { GroupId } from "@/types";
+import { GroupId, ListItem } from "@/types";
 
 export function useSingleListViewMain() {
   const {
@@ -14,22 +14,22 @@ export function useSingleListViewMain() {
 
   const t = TRANSLATIONS[lang];
   const [collapsedDoneItems, setCollapsedDoneItems] = useState<boolean>(true);
-
+  const [editingItem, setEditingItem] = useState<ListItem | null>(null);
   const updateItemQuantity = (itemId: string, quantity: number) => {
-  setLists((prev) =>
-    prev.map((list) => {
-      if (list.id === activeListId) {
-        const updatedItems = list.items.map((item) =>
-          item.id === itemId
-            ? { ...item, quantity: Math.max(1, quantity) } // Ensure minimum quantity of 1
-            : item
-        );
-        return { ...list, items: updatedItems };
-      }
-      return list;
-    })
-  );
-};
+    setLists((prev) =>
+      prev.map((list) => {
+        if (list.id === activeListId) {
+          const updatedItems = list.items.map((item) =>
+            item.id === itemId
+              ? { ...item, quantity: Math.max(1, quantity) } // Ensure minimum quantity of 1
+              : item
+          );
+          return { ...list, items: updatedItems };
+        }
+        return list;
+      })
+    );
+  };
 
   const sortedGroups = useMemo(() => {
     return [...DEFAULT_GROUPS].sort((a, b) => {
@@ -81,6 +81,52 @@ export function useSingleListViewMain() {
       })
     );
   };
+  const deleteAllDoneItems = () => {
+    setLists((prev) =>
+      prev.map((list) => {
+        if (list.id === activeListId) {
+          // Return a new list with only the items that are not checked
+          return {
+            ...list,
+            items: list.items.filter((item) => !item.isChecked),
+          };
+        }
+        return list;
+      })
+    );
+  };
+
+  const deleteItem = (itemId: string) => {
+    setLists((prev) =>
+      prev.map((list) => {
+        if (list.id === activeListId) {
+          // Return a new list with the specific item filtered out
+          return {
+            ...list,
+            items: list.items.filter((item) => item.id !== itemId),
+          };
+        }
+        return list;
+      })
+    );
+  };
+
+  const updateItemGroup = (itemId: string, newGroupId: GroupId) => {
+    setLists((prev) =>
+      prev.map((list) => {
+        if (list.id === activeListId) {
+          return {
+            ...list,
+            items: list.items.map((item) =>
+              item.id === itemId ? { ...item, groupId: newGroupId } : item
+            ),
+          };
+        }
+        return list;
+      })
+    );
+    setEditingItem(null); // Close the modal after updating
+  };
 
 
 
@@ -92,6 +138,11 @@ export function useSingleListViewMain() {
     activeList,
     collapsedDoneItems,
     setCollapsedDoneItems,
-    updateItemQuantity
+    updateItemQuantity,
+    deleteAllDoneItems,
+    deleteItem,
+    updateItemGroup,
+    setEditingItem,
+    editingItem
   };
 }

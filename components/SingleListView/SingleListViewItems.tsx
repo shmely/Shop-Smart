@@ -1,5 +1,6 @@
 import {
   CheckIcon,
+  EditIcon,
   TrashIcon,
 } from "@/configuration/icons";
 import { ListItem } from "@/types";
@@ -15,8 +16,13 @@ interface Props {
 export default function SingleListViewItems({
   items,
 }: Props) {
-  const { toggleItem, updateItemQuantity } =
-    useSingleListViewMain();
+  const {
+    toggleItem,
+    updateItemQuantity,
+    deleteItem,
+    setEditingItem,
+    editingItem
+  } = useSingleListViewMain();
   return (
     <div className="divide-y  divide-gray-100 ps-6">
       {items.map((item) => (
@@ -136,7 +142,20 @@ export default function SingleListViewItems({
               />
             </FormControl>
           )}
-          <DeleteOutlinedIcon />
+          <button
+            onClick={() => setEditingItem(item)}
+            className="text-gray-400 hover:text-emerald-600 p-1 rounded-full"
+            title={`Edit category for ${item.name}`}
+          >
+            <EditIcon />
+          </button>
+          <button
+            title={`Delete ${item.name}`}
+            onClick={() => deleteItem(item.id)}
+            className="text-gray-600 hover:text-red-500 transition-colors"
+          >
+            <DeleteOutlinedIcon />
+          </button>
         </div>
       ))}
     </div>
