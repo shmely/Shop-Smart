@@ -12,17 +12,21 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 interface Props {
   items: ListItem[];
+  toggleItem: (itemId: string) => void;
+  updateItemQuantity: (
+    itemId: string,
+    quantity: number
+  ) => void;
+  deleteItem: (itemId: string) => void;
+  setEditingItem: (item: ListItem | null) => void;
 }
 export default function SingleListViewItems({
   items,
+  toggleItem,
+  updateItemQuantity,
+  deleteItem,
+  setEditingItem,
 }: Props) {
-  const {
-    toggleItem,
-    updateItemQuantity,
-    deleteItem,
-    setEditingItem,
-    editingItem
-  } = useSingleListViewMain();
   return (
     <div className="divide-y  divide-gray-100 ps-6">
       {items.map((item) => (

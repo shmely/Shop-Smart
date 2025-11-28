@@ -20,6 +20,10 @@ export default function SingleListViewMain() {
     editingItem,
     setEditingItem,
     updateItemGroup,
+    // Get the functions to pass down
+    toggleItem,
+    updateItemQuantity,
+    deleteItem,
   } = useSingleListViewMain();
   const doneGroups = groupedItems.filter(
     ({ items }) =>
@@ -70,6 +74,12 @@ export default function SingleListViewMain() {
                   items={items.filter(
                     (item) => !item.isChecked
                   )}
+                  toggleItem={toggleItem}
+                  updateItemQuantity={
+                    updateItemQuantity
+                  }
+                  deleteItem={deleteItem}
+                  setEditingItem={setEditingItem}
                 />
               </div>
             ))
@@ -143,6 +153,12 @@ export default function SingleListViewMain() {
                   items={items.filter(
                     (item) => item.isChecked
                   )}
+                  toggleItem={toggleItem}
+                  updateItemQuantity={
+                    updateItemQuantity
+                  }
+                  deleteItem={deleteItem}
+                  setEditingItem={setEditingItem}
                 />
               </div>
             ))}
