@@ -6,6 +6,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@/configuration/icons";
+import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined';
 export default function SingleListViewMain() {
   const {
     t,
@@ -69,6 +70,7 @@ export default function SingleListViewMain() {
           {t.done_items}
         </span>
         <div className="flex text-gray-500 justify-between align-center w-full ">
+          <DeleteSweepOutlinedIcon />
           <span className="font text-me mx-auto">
             {doneItemsCount === 1
               ? `${t.item} ${t.one}`

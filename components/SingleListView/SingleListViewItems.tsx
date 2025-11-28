@@ -1,9 +1,13 @@
-import { CheckIcon } from "@/configuration/icons";
+import {
+  CheckIcon,
+  TrashIcon,
+} from "@/configuration/icons";
 import { ListItem } from "@/types";
 import { useSingleListViewMain } from "./hooks/useSingleListViewMain";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputAdornment from "@mui/material/InputAdornment";
 import { FormControl } from "@mui/material";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 interface Props {
   items: ListItem[];
@@ -132,6 +136,7 @@ export default function SingleListViewItems({
               />
             </FormControl>
           )}
+          <DeleteOutlinedIcon />
         </div>
       ))}
     </div>

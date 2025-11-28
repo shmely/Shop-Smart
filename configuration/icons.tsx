@@ -118,4 +118,21 @@ const ChevronUpIcon = () => (
   </svg>
 );
 
-export { PlusIcon, CheckIcon, ShareIcon, ArrowLeftIcon, CogIcon, ChevronDownIcon, ChevronUpIcon };
+const TrashIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-5 h-5 transition-transform duration-200"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 18.75V6h12v12.75M9 6V4.5h6V6M4.5 6h15M6 4.5h12M4.5 6h15M6 4.5h12M4.5 6h15"
+    />
+  </svg>
+);
+
+export { PlusIcon, CheckIcon, ShareIcon, ArrowLeftIcon, CogIcon, ChevronDownIcon, ChevronUpIcon, TrashIcon };
