@@ -10,6 +10,8 @@ export const DEFAULT_GROUPS: Group[] = [
   { id: GroupId.CLEANING, order: 6, icon: '🧼', translationKey: 'cleaning' },
   { id: GroupId.BUTCHER, order: 7, icon: '🥩', translationKey: 'butcher' },
   { id: GroupId.FISHS, order: 8, icon: '🐟', translationKey: 'fishes' },
+  { id: GroupId.DRINKS, order: 9, icon: '🥛', translationKey: 'drinks' },
+  { id: GroupId.ALCOHOL, order: 10, icon: '🍷', translationKey: 'alcohol' },
   { id: GroupId.OTHER, order: 99, icon: '📦', translationKey: 'other' }
 ];
 
@@ -58,6 +60,8 @@ export const TRANSLATIONS = {
     one: 'אחד',
     changeCategory: 'שנה קטגוריה',
     fishes: 'דגים',
+    alcohol: 'אלכוהול',
+    drinks: 'משקאות',
 
   },
   [Language.EN]: {
@@ -103,5 +107,7 @@ export const TRANSLATIONS = {
     one: 'One',
     changeCategory: 'Change Category',  
     fishes: 'Fishes',
+    alcohol: 'Alcohol',
+    drinks: 'Drinks',
   }
 };
