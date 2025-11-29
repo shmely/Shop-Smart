@@ -40,7 +40,7 @@ export interface ShoppingList {
   ownerId: string;
   sharedWith: string[]; // Array of User IDs
   items: ListItem[];
-  customGroupOrder?: Record<string, number>; // Allow users to override default order
+  customGroupOrder?: { [key in GroupId]?: number }; // Allow users to override default order
 }
 
 

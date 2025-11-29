@@ -5,7 +5,6 @@ import SingleListViewHeader from "./SingleListViewHeader";
 export default function SingleListView() {
   return (
     <div className="flex flex-col h-screen">
-      <SingleListViewHeader />
       <SingleListViewMain />
       <SingleListViewFooter />
     </div>

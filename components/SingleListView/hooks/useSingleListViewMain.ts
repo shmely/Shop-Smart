@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { DEFAULT_GROUPS, TRANSLATIONS } from "@/configuration/constants";
-import { GroupId, ListItem } from "@/types";
+import { Group, GroupId, ListItem } from "@/types";
 
 export function useSingleListViewMain() {
   const {
@@ -13,8 +13,28 @@ export function useSingleListViewMain() {
   } = useContext(ShopSmartContext);
 
   const t = TRANSLATIONS[lang];
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [collapsedDoneItems, setCollapsedDoneItems] = useState<boolean>(true);
   const [editingItem, setEditingItem] = useState<ListItem | null>(null);
+
+  const saveCustomGroupOrder = (reorderedGroups: Group[]) => {
+    // Create a new order map: { groupId: newOrderIndex, ... }
+    const newOrderMap = reorderedGroups.reduce((acc, group, index) => {
+      acc[group.id] = index;
+      return acc;
+    }, {} as { [key in GroupId]?: number });
+
+    setLists((prev) =>
+      prev.map((list) => {
+        if (list.id === activeListId) {
+          return { ...list, customGroupOrder: newOrderMap };
+        }
+        return list;
+      })
+    );
+    setIsSettingsModalOpen(false); // Close modal on save
+  };
+
   const updateItemQuantity = (itemId: string, quantity: number) => {
     setLists((prev) =>
       prev.map((list) => {
@@ -33,37 +53,43 @@ export function useSingleListViewMain() {
 
   const sortedGroups = useMemo(() => {
     return [...DEFAULT_GROUPS].sort((a, b) => {
-      const orderA = activeList?.items?.[a.id] ?? a.order;
+      const orderA = activeList?.customGroupOrder?.[a.id] ?? a.order;
       const orderB = activeList?.customGroupOrder?.[b.id] ?? b.order;
       return orderA - orderB;
     });
   }, [activeList]);
 
   const groupedItems = useMemo(() => {
-    if (!activeList) return [];
-    const groups = sortedGroups
-      .map((group) => {
-        const itemsInGroup = activeList.items.filter(
-          (i) => i.groupId === group.id
-        );
-        return {
-          group,
-          items: itemsInGroup,
-        };
-      })
-      .filter((g) => g.items.length > 0);
+    if (!activeList?.items) return [];
 
-    const otherItems = activeList.items.filter(
-      (i) => !sortedGroups.find((g) => g.id === i.groupId)
-    );
-    if (otherItems.length > 0) {
-      groups.push({
-        group: DEFAULT_GROUPS.find((g) => g.id === GroupId.OTHER)!,
-        items: otherItems,
-      });
-    }
-    return groups;
-  }, [activeList, sortedGroups]);
+    const itemsByGroup = activeList.items.reduce((acc, item) => {
+      const groupId = item.groupId || GroupId.OTHER;
+      if (!acc[groupId]) {
+        acc[groupId] = [];
+      }
+      acc[groupId].push(item);
+      return acc;
+    }, {} as { [key: string]: ListItem[] });
+
+    return sortedGroups
+      .map((group) => ({
+        group,
+        items: itemsByGroup[group.id] || [],
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [activeList, sortedGroups]); // Make sure `activeList` is a dependency
+
+  const doneGroups = useMemo(
+    () =>
+      activeList
+        ? sortedGroups.filter(
+            (group) =>
+              activeList.items.filter((item) => item.groupId === group.id)
+                .length > 0
+          )
+        : [],
+    [activeList, sortedGroups]
+  );
 
   const toggleItem = (itemId: string) => {
     setLists((prev) =>
@@ -128,8 +154,6 @@ export function useSingleListViewMain() {
     setEditingItem(null); // Close the modal after updating
   };
 
-
-
   return {
     t,
     groupedItems,
@@ -143,6 +167,10 @@ export function useSingleListViewMain() {
     deleteItem,
     updateItemGroup,
     setEditingItem,
-    editingItem
+    editingItem,
+    isSettingsModalOpen,
+    setIsSettingsModalOpen,
+    saveCustomGroupOrder,
+    sortedGroups,
   };
 }

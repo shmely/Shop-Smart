@@ -9,6 +9,8 @@ import {
 import DeleteSweepOutlinedIcon from "@mui/icons-material/DeleteSweepOutlined";
 import { DEFAULT_GROUPS } from "@/configuration/constants";
 import EditCategoryModal from "./EditCategoryModal";
+import SingleListViewHeader from "./SingleListViewHeader";
+import SettingsModal from "../SettingsModal";
 export default function SingleListViewMain() {
   const {
     t,
@@ -23,6 +25,10 @@ export default function SingleListViewMain() {
     toggleItem,
     updateItemQuantity,
     deleteItem,
+    setIsSettingsModalOpen,
+    saveCustomGroupOrder,
+    isSettingsModalOpen,
+    sortedGroups,
   } = useSingleListViewMain();
   const doneGroups = groupedItems.filter(
     ({ items }) =>
@@ -38,12 +44,12 @@ export default function SingleListViewMain() {
 
   return (
     <>
+      <SingleListViewHeader
+        onOpenSettings={() =>
+          setIsSettingsModalOpen(true)
+        }
+      />
       <main className="flex-1 p-4 pb-60 overflow-auto">
-        <div className="flex items-center  border-t border-gray-400 my-6">
-          <span className="font-bold text-gray-700 text-xl mx-auto mt-4 mb-2">
-            {activeList?.name}
-          </span>
-        </div>
         {groupedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">
             <span className="text-6xl mb-4">
@@ -170,6 +176,15 @@ export default function SingleListViewMain() {
         )}
         <SingleListViewFooter />
       </main>
+      {isSettingsModalOpen && (
+        <SettingsModal
+          initialGroups={sortedGroups}
+          onClose={() =>
+            setIsSettingsModalOpen(false)
+          }
+          onSave={saveCustomGroupOrder}
+        />
+      )}
       {editingItem && (
         <EditCategoryModal
           item={editingItem}

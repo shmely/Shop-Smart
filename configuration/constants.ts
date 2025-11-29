@@ -62,6 +62,9 @@ export const TRANSLATIONS = {
     fishes: 'דגים',
     alcohol: 'אלכוהול',
     drinks: 'משקאות',
+    sort_categories: 'מיין קטגוריות',
+    drag_and_drop_to_reorder: 'גרור ושחרר כדי למיין מחדש את הסדר בסופר',
+    save_sorting: 'שמור מיון',
 
   },
   [Language.EN]: {
@@ -109,5 +112,8 @@ export const TRANSLATIONS = {
     fishes: 'Fishes',
     alcohol: 'Alcohol',
     drinks: 'Drinks',
+    sort_categories: 'Sort Categories',
+    drag_and_drop_to_reorder: 'Drag and drop to reorder your supermarket walk',
+    save_sorting: 'Save Sorting',
   }
 };
