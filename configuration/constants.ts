@@ -9,8 +9,8 @@ export const DEFAULT_GROUPS: Group[] = [
   { id: GroupId.DRY_GOODS, order: 5, icon: '🍝', translationKey: 'dry_goods' },
   { id: GroupId.CLEANING, order: 6, icon: '🧼', translationKey: 'cleaning' },
   { id: GroupId.BUTCHER, order: 7, icon: '🥩', translationKey: 'butcher' },
+  { id: GroupId.FISHS, order: 8, icon: '🐟', translationKey: 'fishes' },
   { id: GroupId.OTHER, order: 99, icon: '📦', translationKey: 'other' }
-
 ];
 
 export const TRANSLATIONS = {
@@ -56,7 +56,8 @@ export const TRANSLATIONS = {
     items: 'פריטים',
     item: 'פריט',
     one: 'אחד',
-    
+    changeCategory: 'שנה קטגוריה',
+    fishes: 'דגים',
 
   },
   [Language.EN]: {
@@ -100,5 +101,7 @@ export const TRANSLATIONS = {
     items: 'Items',
     item: 'Item',
     one: 'One',
+    changeCategory: 'Change Category',  
+    fishes: 'Fishes',
   }
 };

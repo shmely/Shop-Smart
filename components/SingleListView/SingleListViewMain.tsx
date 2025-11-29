@@ -20,7 +20,6 @@ export default function SingleListViewMain() {
     editingItem,
     setEditingItem,
     updateItemGroup,
-    // Get the functions to pass down
     toggleItem,
     updateItemQuantity,
     deleteItem,
@@ -69,7 +68,6 @@ export default function SingleListViewMain() {
                   itemsCount={items.length}
                 />
 
-                {/* Items to buy */}
                 <SingleListViewItems
                   items={items.filter(
                     (item) => !item.isChecked
@@ -84,87 +82,94 @@ export default function SingleListViewMain() {
               </div>
             ))
         )}
-        <div className="flex flex-col items-center border-t border-gray-400 my-6 px-4">
-          <span className="text-gray-700 text-xl ">
-            {t.done_items}
-          </span>
-          <div className="flex text-gray-500 justify-between align-center w-full ">
-            <button
-              onClick={deleteAllDoneItems}
-              className="text-gray-600 hover:text-red-500 transition-colors"
-            >
-              <DeleteSweepOutlinedIcon fontSize="large" />
-            </button>
+        {doneItemsCount > 0 && (
+          <>
+            <div className="flex flex-col items-center border-t border-gray-400 my-6 px-4">
+              <span className="text-gray-700 text-xl ">
+                {t.done_items}
+              </span>
+              <div className="flex text-gray-500 justify-between align-center w-full ">
+                <button
+                  onClick={deleteAllDoneItems}
+                  className="text-gray-600 hover:text-red-500 transition-colors"
+                >
+                  <DeleteSweepOutlinedIcon fontSize="large" />
+                </button>
 
-            <span className="font text-me mx-auto">
-              {doneItemsCount === 1
-                ? `${t.item} ${t.one}`
-                : doneItemsCount > 1
-                ? `${doneItemsCount} ${t.items}`
-                : ""}
-            </span>
-            {doneItemsCount > 0 && (
-              <div className="flex">
-                {collapsedDoneItems ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCollapsedDoneItems(
-                        !collapsedDoneItems
-                      )
-                    }
-                    className="focus:outline-none"
-                  >
-                    <ChevronUpIcon />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCollapsedDoneItems(
-                        !collapsedDoneItems
-                      )
-                    }
-                    className="focus:outline-none"
-                  >
-                    <ChevronDownIcon />
-                  </button>
+                <span className="font text-me mx-auto">
+                  {doneItemsCount === 1
+                    ? `${t.item} ${t.one}`
+                    : doneItemsCount > 1
+                    ? `${doneItemsCount} ${t.items}`
+                    : ""}
+                </span>
+                {doneItemsCount > 0 && (
+                  <div className="flex">
+                    {collapsedDoneItems ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedDoneItems(
+                            !collapsedDoneItems
+                          )
+                        }
+                        className="focus:outline-none"
+                      >
+                        <ChevronUpIcon />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedDoneItems(
+                            !collapsedDoneItems
+                          )
+                        }
+                        className="focus:outline-none"
+                      >
+                        <ChevronDownIcon />
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
-        {!collapsedDoneItems &&
-          groupedItems
-            .filter(({ items }) =>
-              items.some((item) => item.isChecked)
-            )
-            .map(({ group, items }) => (
-              <div
-                key={group.id}
-                className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100"
-              >
-                <SingleListViewGroupHeader
-                  group={group}
-                  itemsCount={items.length}
-                />
-
-                <SingleListViewItems
-                  items={items.filter(
+            </div>
+            {!collapsedDoneItems &&
+              groupedItems
+                .filter(({ items }) =>
+                  items.some(
                     (item) => item.isChecked
-                  )}
-                  toggleItem={toggleItem}
-                  updateItemQuantity={
-                    updateItemQuantity
-                  }
-                  deleteItem={deleteItem}
-                  setEditingItem={setEditingItem}
-                />
-              </div>
-            ))}
+                  )
+                )
+                .map(({ group, items }) => (
+                  <div
+                    key={group.id}
+                    className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100"
+                  >
+                    <SingleListViewGroupHeader
+                      group={group}
+                      itemsCount={items.length}
+                    />
+
+                    <SingleListViewItems
+                      items={items.filter(
+                        (item) => item.isChecked
+                      )}
+                      toggleItem={toggleItem}
+                      updateItemQuantity={
+                        updateItemQuantity
+                      }
+                      deleteItem={deleteItem}
+                      setEditingItem={
+                        setEditingItem
+                      }
+                    />
+                  </div>
+                ))}
+          </>
+        )}
         <SingleListViewFooter />
       </main>
-      {/* Render the modal when an item is being edited */}
       {editingItem && (
         <EditCategoryModal
           item={editingItem}

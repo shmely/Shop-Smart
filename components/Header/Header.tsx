@@ -1,29 +1,50 @@
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { TRANSLATIONS } from "@/configuration/constants";
 import { Language } from "@/types";
-import { useContext, useState, useRef, useEffect } from "react";
+import {
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 import UserDropdown from "./UserDropdown";
 
 export default function Header() {
-  const { user, lang, setLang } = useContext(ShopSmartContext);
+  const { user, lang, setLang } = useContext(
+    ShopSmartContext
+  );
   const t = TRANSLATIONS[lang];
-  const [imageError, setImageError] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [imageError, setImageError] =
+    useState(false);
+  const [showDropdown, setShowDropdown] =
+    useState(false);
+  const dropdownRef =
+    useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (
+      event: MouseEvent
+    ) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(
+          event.target as Node
+        )
       ) {
         setShowDropdown(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+    return () =>
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
   }, []);
 
   // Move the early return AFTER all hooks
@@ -45,10 +66,15 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm p-4 top-0 z-10 flex justify-between items-center">
       <div className="flex items-center gap-3">
-        <div className="relative" ref={dropdownRef}>
+        <div
+          className="relative"
+          ref={dropdownRef}
+        >
           <div
             className="cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setShowDropdown(!showDropdown)}
+            onClick={() =>
+              setShowDropdown(!showDropdown)
+            }
           >
             {!imageError && user.avatarUrl ? (
               <img
@@ -79,15 +105,6 @@ export default function Header() {
           </h2>
         </div>
       </div>
-
-      <button
-        onClick={() =>
-          setLang(lang === Language.HE ? Language.EN : Language.HE)
-        }
-        className="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full"
-      >
-        {lang === Language.HE ? "EN" : "עב"}
-      </button>
     </header>
   );
 }

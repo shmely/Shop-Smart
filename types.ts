@@ -11,7 +11,8 @@ export enum GroupId {
   DRY_GOODS = 'dry_goods',
   CLEANING = 'cleaning',
   OTHER = 'other',
-  BUTCHER = "BUTCHER"
+  BUTCHER = "butcher",
+  FISHS = "fishes"
 }
 
 export interface Group {
