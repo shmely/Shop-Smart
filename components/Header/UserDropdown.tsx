@@ -45,24 +45,24 @@ export default function UserDropdown({
       {/* User Info Section */}
       <div className="px-4 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          {!imageError && user.avatarUrl ? (
+          {!imageError && user.photoURL ? (
             <img
-              src={user.avatarUrl}
+              src={user.photoURL}
               alt="Profile"
               className="w-12 h-12 rounded-full"
               referrerPolicy="no-referrer"
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
-              {getInitials(user.name)}
+              {getInitials(user.displayName)}
             </div>
           )}
           <div className="flex-1 min-w-0">
             <p className="font-medium text-gray-900 truncate">
-              {user.name}
+              {user.displayName}
             </p>
             <p className="text-sm text-gray-500 truncate">
-              {user.name || t.welcome}
+              {user.displayName || t.welcome}
             </p>
           </div>
         </div>

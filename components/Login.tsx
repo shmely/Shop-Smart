@@ -46,16 +46,10 @@ export default function Login() {
       const firebaseUser = result.user;
 
      
-      const customUserObject: User = {
-        
-        uid: firebaseUser.uid,
-        email: firebaseUser.email || null,
-        displayName: firebaseUser.displayName || t.guest,
-        photoURL: firebaseUser.photoURL || null,
-      };
+     
 
       
-      setUser(customUserObject as any);
+      setUser(firebaseUser);
       console.log(
         "Logged in UID:",
         firebaseUser.uid
