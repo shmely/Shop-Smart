@@ -68,7 +68,7 @@ export function useSingleListViewFooter() {
       name: currentText,
       groupId: detectedGroupId,
       isChecked: false,
-      addedBy: user.id,
+      addedBy: user.uid,
       timestamp: Date.now(),
       quantity: 1,
     };
