@@ -11,7 +11,9 @@ export function useSingleListViewFooter() {
     lang,
     setLists,
     activeListId,
+    activeList,
     lists,
+    updateListItems,
     user,
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
@@ -48,10 +50,10 @@ export function useSingleListViewFooter() {
   };
 
   const handleAddItem = async (itemName?: string) => {
+    if (!activeListId) return;
+
     const currentText = itemName || newItemText;
     if (!currentText.trim() || !activeListId || !user) return;
-    const activeList = lists.find(list => list.id === activeListId);
-    if (!activeList) return;
 
     if (activeList.items.some(item => item.name.toLowerCase() === currentText.toLowerCase())) {
       setNewItemText("");
@@ -73,13 +75,8 @@ export function useSingleListViewFooter() {
       quantity: 1,
     };
 
-    setLists((prev) =>
-      prev.map((list) =>
-        list.id === activeListId
-          ? { ...list, items: [...list.items, newItem] }
-          : list
-      )
-    );
+    const newItems = [...activeList.items, newItem];
+    updateListItems(activeList.id, newItems);    
 
     setIsCategorizing(false);
 

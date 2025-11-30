@@ -4,17 +4,21 @@ import {
 } from "@/configuration/icons";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useSingleListViewHeader } from "./hooks/useSingleListViewHeader";
+import { useState } from "react";
+import { Share } from "@mui/icons-material";
+import ShareListModal from "./modal/ShareListModal";
 
 interface Props {
   onOpenSettings: () => void; // Add this prop
 }
 
-export default function SingleListViewHeader({ onOpenSettings }: Props) {
-  const {
-    activeList,
-    setActiveListId,
-    handleShare,
-  } = useSingleListViewHeader();
+export default function SingleListViewHeader({
+  onOpenSettings,
+}: Props) {
+  const { activeList, setActiveListId } =
+    useSingleListViewHeader();
+  const [shareList, setShareList] =
+    useState<boolean>(false);
   return (
     <header className="bg-white shadow-sm top-0 z-10 relative">
       <div className="flex items-center justify-between p-4">
@@ -29,7 +33,7 @@ export default function SingleListViewHeader({ onOpenSettings }: Props) {
         </h1>
         <div className="flex gap-2">
           <button
-            onClick={handleShare}
+            onClick={() => setShareList(true)}
             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-full"
           >
             <ShareIcon />
@@ -42,6 +46,11 @@ export default function SingleListViewHeader({ onOpenSettings }: Props) {
           </button>
         </div>
       </div>
+      {shareList && (
+        <ShareListModal
+          setIsOpen={setShareList}
+        />
+      )}
     </header>
   );
 }

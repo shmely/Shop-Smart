@@ -4,6 +4,7 @@ import {
   ShoppingList,
   Notification,
   User,
+  ListItem,
 } from "@/types";
 
 import {
@@ -14,6 +15,19 @@ import {
 } from "react";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  updateDoc,
+  addDoc,
+  arrayUnion,
+  arrayRemove,
+  getDocs,
+  setDoc,
+} from "firebase/firestore";
 
 type ShopSmartContextType = {
   user: User | null;
@@ -38,6 +52,22 @@ type ShopSmartContextType = {
   setNotification: React.Dispatch<
     React.SetStateAction<Notification | null>
   >;
+  createNewList: (name: string) => Promise<void>;
+  updateListItems: (
+    listId: string,
+    newItems: ListItem[]
+  ) => Promise<void>;
+  addListMember: (
+    listId: string,
+    memberUid: string
+  ) => Promise<void>;
+  removeListMember: (
+    listId: string,
+    memberUid: string
+  ) => Promise<void>;
+  addListMemberByEmail: (
+    email: string
+  ) => Promise<void>;
 };
 
 export const ShopSmartContext = createContext<
@@ -64,40 +94,40 @@ export function ShopSmartProvider({
 
   const [lists, setLists] = useState<
     ShoppingList[]
-  >(() => {
-    try {
-      const savedLists = localStorage.getItem(
-        STORAGE_KEYS.LISTS
-      );
-      return savedLists
-        ? JSON.parse(savedLists)
-        : [];
-    } catch (error) {
-      console.error(
-        "Error loading lists from localStorage:",
-        error
-      );
-      return [];
-    }
-  });
+  >([]);
 
   useEffect(() => {
     // This listener runs once on load, and again whenever the user logs in or out.
     const unsubscribe = onAuthStateChanged(
       auth,
-      (firebaseUser) => {
+      async (firebaseUser) => {
         if (firebaseUser) {
           // User is signed in.
           const userData: User = {
             uid: firebaseUser.uid,
-            email: firebaseUser.email,
+            email: firebaseUser.email.toLocaleLowerCase(),
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
           };
           setUser(userData);
+          const userRef = doc(
+            db,
+            "users",
+            firebaseUser.uid
+          );
+          await setDoc(
+            userRef,
+            {
+              email: firebaseUser.email,
+              displayName:
+                firebaseUser.displayName,
+            },
+            { merge: true }
+          );
         } else {
           // User is signed out.
           setUser(null);
+          setLists([]); // Clear lists on logout
         }
         // 3. Once we have a definitive answer, set loading to false.
         setIsAuthLoading(false);
@@ -107,6 +137,94 @@ export function ShopSmartProvider({
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid) return; // Don't query if there's no user
+
+    setIsAuthLoading(true);
+    const listsRef = collection(
+      db,
+      "shoppingLists"
+    );
+    // This query is the core of your security model:
+    // It only fetches lists where the current user's UID is in the 'members' array.
+    const q = query(
+      listsRef,
+      where("members", "array-contains", user.uid)
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const userLists: ShoppingList[] = [];
+        querySnapshot.forEach((doc) => {
+          userLists.push({
+            id: doc.id,
+            ...doc.data(),
+          } as ShoppingList);
+        });
+        setLists(userLists);
+        setIsAuthLoading(false);
+      }
+    );
+
+    return () => unsubscribe(); // Cleanup listener on unmount or user change
+  }, [user]);
+
+  const createNewList = async (name: string) => {
+    if (!user)
+      throw new Error("User not authenticated");
+    const newList = {
+      name,
+      ownerId: user.uid,
+      members: [user.uid], // Owner is always the first member
+      items: [],
+    };
+    await addDoc(
+      collection(db, "shoppingLists"),
+      newList
+    );
+  };
+
+  const updateListItems = async (
+    listId: string,
+    newItems: ListItem[]
+  ) => {
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      listId
+    );
+    await updateDoc(listRef, { items: newItems });
+  };
+
+  const addListMember = async (
+    listId: string,
+    memberUid: string
+  ) => {
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      listId
+    );
+    await updateDoc(listRef, {
+      members: arrayUnion(memberUid),
+    });
+  };
+
+  const removeListMember = async (
+    listId: string,
+    memberUid: string
+  ) => {
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      listId
+    );
+    await updateDoc(listRef, {
+      members: arrayRemove(memberUid),
+    });
+  };
 
   const [activeListId, setActiveListId] =
     useState<string | null>(() => {
@@ -142,26 +260,6 @@ export function ShopSmartProvider({
     }
   );
 
-  // Save lists to localStorage whenever they change
-  useEffect(() => {
-    console.log(
-      "📦 Saving lists to localStorage:",
-      lists
-    );
-    try {
-      localStorage.setItem(
-        STORAGE_KEYS.LISTS,
-        JSON.stringify(lists)
-      );
-    } catch (error) {
-      console.error(
-        "Error saving lists to localStorage:",
-        error
-      );
-    }
-  }, [lists]);
-
-  // Save language to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -208,6 +306,39 @@ export function ShopSmartProvider({
     );
   }, [lists, activeListId]);
 
+  const addListMemberByEmail = async (
+    email: string
+  ) => {
+    if (!activeListId) return;
+   const normalizedEmail = email.toLowerCase().trim();
+    const usersRef = collection(db, "users");
+    const q = query(
+      usersRef,
+      where("email", "==", normalizedEmail) // 3. Query with the lowercase email
+    );
+
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      throw new Error(
+        "User with that email not found."
+      );
+    }
+
+    const memberUid = querySnapshot.docs[0].id;
+
+    // 2. Add the UID to the list's members array
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      activeListId
+    );
+    await updateDoc(listRef, {
+      members: arrayUnion(memberUid),
+    });
+  };
+
   const [notification, setNotification] =
     useState<Notification | null>(null);
   const [isAuthLoading, setIsAuthLoading] =
@@ -228,6 +359,11 @@ export function ShopSmartProvider({
         setNotification,
         activeList,
         isAuthLoading,
+        createNewList,
+        updateListItems,
+        addListMember,
+        removeListMember,
+        addListMemberByEmail,
       }}
     >
       {children}

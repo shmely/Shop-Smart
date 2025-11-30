@@ -10,12 +10,14 @@ export function useSingleListViewMain() {
     setLists,
     activeListId,
     user,
+    updateListItems
   } = useContext(ShopSmartContext);
 
   const t = TRANSLATIONS[lang];
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [collapsedDoneItems, setCollapsedDoneItems] = useState<boolean>(true);
   const [editingItem, setEditingItem] = useState<ListItem | null>(null);
+
 
   const saveCustomGroupOrder = (reorderedGroups: Group[]) => {
     // Create a new order map: { groupId: newOrderIndex, ... }
@@ -36,19 +38,12 @@ export function useSingleListViewMain() {
   };
 
   const updateItemQuantity = (itemId: string, quantity: number) => {
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          const updatedItems = list.items.map((item) =>
-            item.id === itemId
-              ? { ...item, quantity: Math.max(1, quantity) } // Ensure minimum quantity of 1
-              : item
-          );
-          return { ...list, items: updatedItems };
-        }
-        return list;
-      })
+    if (!activeList) return;
+    const newItems = activeList.items.map((item) =>
+      item.id === itemId ? { ...item, quantity } : item
     );
+    // Call the context function to update Firestore
+    updateListItems(activeList.id, newItems);
   };
 
   const sortedGroups = useMemo(() => {
@@ -79,79 +74,40 @@ export function useSingleListViewMain() {
       .filter((group) => group.items.length > 0);
   }, [activeList, sortedGroups]); // Make sure `activeList` is a dependency
 
-  const doneGroups = useMemo(
-    () =>
-      activeList
-        ? sortedGroups.filter(
-            (group) =>
-              activeList.items.filter((item) => item.groupId === group.id)
-                .length > 0
-          )
-        : [],
-    [activeList, sortedGroups]
-  );
+
 
   const toggleItem = (itemId: string) => {
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          const updatedItems = list.items.map(
-            (item) =>
-              item.id === itemId
-                ? { ...item, isChecked: !item.isChecked }
-                : item
-          );
-          return { ...list, items: updatedItems };
-        }
-        return list;
-      })
+
+    if (!activeList) return;
+
+    const newItems = activeList.items.map((item) =>
+      item.id === itemId ? { ...item, isChecked: !item.isChecked } : item
     );
+    updateListItems(activeList.id, newItems);
   };
   const deleteAllDoneItems = () => {
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          // Return a new list with only the items that are not checked
-          return {
-            ...list,
-            items: list.items.filter((item) => !item.isChecked),
-          };
-        }
-        return list;
-      })
-    );
+    if (!activeList) return;
+
+    const newItems = activeList.items.filter((item) => item.isChecked);
+
+    updateListItems(activeList.id, newItems);  
   };
 
   const deleteItem = (itemId: string) => {
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          // Return a new list with the specific item filtered out
-          return {
-            ...list,
-            items: list.items.filter((item) => item.id !== itemId),
-          };
-        }
-        return list;
-      })
-    );
+    if (!activeList) return;
+    const newItems = activeList.items.filter((item) => item.id !== itemId);
+    // Call the context function to update Firestore
+    updateListItems(activeList.id, newItems);
   };
 
   const updateItemGroup = (itemId: string, newGroupId: GroupId) => {
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          return {
-            ...list,
-            items: list.items.map((item) =>
-              item.id === itemId ? { ...item, groupId: newGroupId } : item
-            ),
-          };
-        }
-        return list;
-      })
+    if (!activeList) return;
+
+    const newItems = activeList.items.map((item) =>
+      item.id === itemId ? { ...item, groupId: newGroupId } : item
     );
-    setEditingItem(null); // Close the modal after updating
+    updateListItems(activeList.id, newItems);
+    setEditingItem(null);
   };
 
   return {

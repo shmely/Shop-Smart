@@ -8,14 +8,13 @@ import {
 } from "@/configuration/icons";
 import DeleteSweepOutlinedIcon from "@mui/icons-material/DeleteSweepOutlined";
 import { DEFAULT_GROUPS } from "@/configuration/constants";
-import EditCategoryModal from "./EditCategoryModal";
+import EditCategoryModal from "./modal/EditCategoryModal";
 import SingleListViewHeader from "./SingleListViewHeader";
-import SettingsModal from "../SettingsModal";
+import SettingsModal from "./modal/SettingsModal";
 export default function SingleListViewMain() {
   const {
     t,
     groupedItems,
-    activeList,
     collapsedDoneItems,
     setCollapsedDoneItems,
     deleteAllDoneItems,

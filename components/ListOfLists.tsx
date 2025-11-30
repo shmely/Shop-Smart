@@ -2,14 +2,15 @@ import { TRANSLATIONS } from "@/configuration/constants";
 import { PlusIcon } from "@/configuration/icons";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { ShoppingList } from "@/types";
+import { create } from "domain";
 import { useContext, useState } from "react";
 
 export default function ListOfLists() {
   const {
-    lists,
-    setLists,
+    lists,    
     user,
     lang,
+    createNewList,
     setActiveListId,
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
@@ -20,18 +21,12 @@ export default function ListOfLists() {
 
   const handleCreateList = () => {
     if (!newListName.trim() || !user) return;
-    const newList: ShoppingList = {
-      id: `list_${Date.now()}`,
-      name: newListName,
-      ownerId: user.uid,
-      members: [],
-      items: [],
-    };
-    setLists([...lists, newList]);
-    setActiveListId(newList.id);
+    createNewList(newListName.trim());
     setShowCreateList(false);
     setNewListName("");
   };
+
+
   return (
     <div className="min-h-screen bg-gray-50 pb-60 overflow-auto">
       <main className="p-4">
@@ -49,7 +44,12 @@ export default function ListOfLists() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl">
-                  {list.name.toLocaleLowerCase().includes("grocery") || list.name.toLocaleLowerCase().includes("סופר")
+                  {list.name
+                    .toLocaleLowerCase()
+                    .includes("grocery") ||
+                  list.name
+                    .toLocaleLowerCase()
+                    .includes("סופר")
                     ? "🛒"
                     : "⛺"}
                 </div>

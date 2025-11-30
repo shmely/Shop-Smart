@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Group } from "@/types";
-import { SortableCategoryItem } from "./SortableCategoryItem";
+import { SortableCategoryItem } from "../SortableCategoryItem";
 import { TRANSLATIONS } from "@/configuration/constants";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 
