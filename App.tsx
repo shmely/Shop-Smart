@@ -20,6 +20,7 @@ export default function App() {
     activeListId,
     setNotification,
     isAuthLoading,
+    
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
   useEffect(() => {

@@ -1,6 +1,5 @@
-import { useMemo, useContext } from "react";
+import { useMemo } from "react";
 import {
-  GroupId,
   Language,
   ShoppingList,
   Notification,
@@ -59,7 +58,10 @@ const STORAGE_KEYS = {
 export function ShopSmartProvider({
   children,
 }: ShopSmartProviderProps) {
-  // Load initial data from localStorage
+  const [user, setUser] = useState<User | null>(
+    null
+  );
+
   const [lists, setLists] = useState<
     ShoppingList[]
   >(() => {
@@ -79,23 +81,32 @@ export function ShopSmartProvider({
     }
   });
 
-  const [user, setUser] =
-    useState<User | null>(() => {
-      try {
-        const savedUser = localStorage.getItem(
-          STORAGE_KEYS.USER
-        );
-        return savedUser
-          ? JSON.parse(savedUser)
-          : null;
-      } catch (error) {
-        console.error(
-          "Error loading user from localStorage:",
-          error
-        );
-        return null;
+  useEffect(() => {
+    // This listener runs once on load, and again whenever the user logs in or out.
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        if (firebaseUser) {
+          // User is signed in.
+          const userData: User = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+          };
+          setUser(userData);
+        } else {
+          // User is signed out.
+          setUser(null);
+        }
+        // 3. Once we have a definitive answer, set loading to false.
+        setIsAuthLoading(false);
       }
-    });
+    );
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   const [activeListId, setActiveListId] =
     useState<string | null>(() => {
@@ -165,11 +176,28 @@ export function ShopSmartProvider({
     }
   }, [lang]);
 
+  useEffect(() => {
+    try {
+      if (activeListId) {
+        localStorage.setItem(
+          STORAGE_KEYS.ACTIVE_LIST_ID,
+          activeListId
+        );
+      } else {
+        // Also remove it from storage if it becomes null
+        localStorage.removeItem(
+          STORAGE_KEYS.ACTIVE_LIST_ID
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Error saving active list ID to localStorage:",
+        error
+      );
+    }
+  }, [activeListId]);
+
   const activeList = useMemo(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.ACTIVE_LIST_ID,
-      activeListId
-    );
     if (!activeListId) {
       return null;
     }
@@ -183,7 +211,7 @@ export function ShopSmartProvider({
   const [notification, setNotification] =
     useState<Notification | null>(null);
   const [isAuthLoading, setIsAuthLoading] =
-    useState<boolean>(false);
+    useState<boolean>(true);
 
   return (
     <ShopSmartContext.Provider
