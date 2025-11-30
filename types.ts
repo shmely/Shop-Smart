@@ -29,7 +29,7 @@ export interface ListItem {
   name: string;
   groupId: GroupId;
   isChecked: boolean;
-  addedBy: string; // User ID
+  addedBy: string; 
   timestamp: number;
   quantity: number;
 }

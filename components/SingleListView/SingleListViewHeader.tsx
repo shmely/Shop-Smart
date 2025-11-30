@@ -19,7 +19,7 @@ export default function SingleListViewHeader({ onOpenSettings }: Props) {
     <header className="bg-white shadow-sm top-0 z-10 relative">
       <div className="flex items-center justify-between p-4">
         <button
-          onClick={() => setActiveListId(null)}
+          onClick={() => setActiveListId("")}
           className="p-2 -ml-2 rtl:-mr-2 text-gray-600 hover:bg-gray-100 rounded-full"
         >
           <ArrowLeftIcon />
