@@ -24,7 +24,7 @@ export default function ListOfLists() {
       id: `list_${Date.now()}`,
       name: newListName,
       ownerId: user.id,
-      sharedWith: [],
+      members: [],
       items: [],
     };
     setLists([...lists, newList]);
@@ -64,10 +64,10 @@ export default function ListOfLists() {
                       ).length
                     }{" "}
                     items •{" "}
-                    {list.sharedWith.length > 0
+                    {list.members.length > 0
                       ? t.shared_with +
                         " " +
-                        list.sharedWith.length
+                        list.members.length
                       : ""}
                   </p>
                 </div>

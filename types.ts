@@ -38,7 +38,7 @@ export interface ShoppingList {
   id: string;
   name: string;
   ownerId: string;
-  sharedWith: string[]; // Array of User IDs
+  members: string[]; // Array of User IDs
   items: ListItem[];
   customGroupOrder?: { [key in GroupId]?: number }; // Allow users to override default order
 }
