@@ -23,7 +23,7 @@ export default function ListOfLists() {
     const newList: ShoppingList = {
       id: `list_${Date.now()}`,
       name: newListName,
-      ownerId: user.id,
+      ownerId: user.uid,
       members: [],
       items: [],
     };

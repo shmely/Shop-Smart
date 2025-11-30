@@ -44,10 +44,11 @@ export interface ShoppingList {
 }
 
 
-export interface ShopSmartUser {
-  id: string;
-  name: string;
-  avatarUrl: string;
+export interface User {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
 }
 
 export interface Notification {
