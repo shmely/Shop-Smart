@@ -2,7 +2,7 @@ import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { Language } from "../types";
 import { useContext } from "react";
 import { TRANSLATIONS } from "../configuration/constants";
-import { ShopSmartUser } from "../types";
+import { User } from "../types";
 import {
   GoogleAuthProvider,
   signInWithPopup,  
@@ -46,13 +46,12 @@ export default function Login() {
       const firebaseUser = result.user;
 
      
-      const customUserObject: ShopSmartUser = {
+      const customUserObject: User = {
         
-        id: firebaseUser.uid,
-       
-        name: firebaseUser.displayName || t.guest,
-        
-        avatarUrl: firebaseUser.photoURL || "",
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || null,
+        displayName: firebaseUser.displayName || t.guest,
+        photoURL: firebaseUser.photoURL || null,
       };
 
       

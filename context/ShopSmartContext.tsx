@@ -4,7 +4,7 @@ import {
   Language,
   ShoppingList,
   Notification,
-  ShopSmartUser,
+  User,
 } from "@/types";
 
 import {
@@ -17,7 +17,7 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 type ShopSmartContextType = {
-  user: ShopSmartUser | null;
+  user: User | null;
   lang: Language;
   lists: ShoppingList[];
   activeListId?: string | null;
@@ -25,7 +25,7 @@ type ShopSmartContextType = {
   notification: Notification | null;
   isAuthLoading: boolean;
   setUser: React.Dispatch<
-    React.SetStateAction<ShopSmartUser | null>
+    React.SetStateAction<User | null>
   >;
   setLang: React.Dispatch<
     React.SetStateAction<Language>
@@ -80,7 +80,7 @@ export function ShopSmartProvider({
   });
 
   const [user, setUser] =
-    useState<ShopSmartUser | null>(() => {
+    useState<User | null>(() => {
       try {
         const savedUser = localStorage.getItem(
           STORAGE_KEYS.USER

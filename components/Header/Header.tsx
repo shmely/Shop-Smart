@@ -1,6 +1,5 @@
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { TRANSLATIONS } from "@/configuration/constants";
-import { Language } from "@/types";
 import {
   useContext,
   useState,
@@ -76,9 +75,9 @@ export default function Header() {
               setShowDropdown(!showDropdown)
             }
           >
-            {!imageError && user.avatarUrl ? (
+            {!imageError && user.photoURL ? (
               <img
-                src={user.avatarUrl}
+                src={user.photoURL}
                 alt="Profile"
                 className="w-10 h-10 rounded-full border-2 border-emerald-500"
                 onError={handleImageError}
@@ -86,7 +85,7 @@ export default function Header() {
               />
             ) : (
               <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
-                {getInitials(user.name)}
+                {getInitials(user.displayName)}
               </div>
             )}
           </div>
@@ -101,7 +100,7 @@ export default function Header() {
 
         <div>
           <h2 className="font-bold text-gray-800 text-lg">
-            {t.welcome}, {user.name.split(" ")[0]}
+            {t.welcome}, {user.displayName.split(" ")[0]}
           </h2>
         </div>
       </div>
