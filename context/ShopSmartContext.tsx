@@ -166,6 +166,13 @@ export function ShopSmartProvider({
   }, [lang]);
 
   const activeList = useMemo(() => {
+    localStorage.setItem(
+      STORAGE_KEYS.ACTIVE_LIST_ID,
+      activeListId
+    );
+    if (!activeListId) {
+      return null;
+    }
     return (
       lists.find(
         (list) => list.id === activeListId
