@@ -10,7 +10,8 @@ export function useSingleListViewMain() {
     setLists,
     activeListId,
     user,
-    updateListItems
+    updateListItems,
+    updateCustomerGroupOrder
   } = useContext(ShopSmartContext);
 
   const t = TRANSLATIONS[lang];
@@ -20,21 +21,14 @@ export function useSingleListViewMain() {
 
 
   const saveCustomGroupOrder = (reorderedGroups: Group[]) => {
-    // Create a new order map: { groupId: newOrderIndex, ... }
+    if (!activeListId) return;
     const newOrderMap = reorderedGroups.reduce((acc, group, index) => {
       acc[group.id] = index;
       return acc;
     }, {} as { [key in GroupId]?: number });
 
-    setLists((prev) =>
-      prev.map((list) => {
-        if (list.id === activeListId) {
-          return { ...list, customGroupOrder: newOrderMap };
-        }
-        return list;
-      })
-    );
-    setIsSettingsModalOpen(false); // Close modal on save
+    updateCustomerGroupOrder(newOrderMap);
+    setIsSettingsModalOpen(false); 
   };
 
   const updateItemQuantity = (itemId: string, quantity: number) => {
@@ -42,7 +36,7 @@ export function useSingleListViewMain() {
     const newItems = activeList.items.map((item) =>
       item.id === itemId ? { ...item, quantity } : item
     );
-    // Call the context function to update Firestore
+   
     updateListItems(activeList.id, newItems);
   };
 
@@ -90,7 +84,7 @@ export function useSingleListViewMain() {
 
     const newItems = activeList.items.filter((item) => item.isChecked);
 
-    updateListItems(activeList.id, newItems);  
+    updateListItems(activeList.id, newItems);
   };
 
   const deleteItem = (itemId: string) => {

@@ -5,6 +5,7 @@ import {
   Notification,
   User,
   ListItem,
+  GroupId,
 } from "@/types";
 
 import {
@@ -68,6 +69,9 @@ type ShopSmartContextType = {
   addListMemberByEmail: (
     email: string
   ) => Promise<void>;
+  updateCustomerGroupOrder: (customerGroupOrder: {
+    [key in GroupId]?: number;
+  }) => Promise<void>;
 };
 
 export const ShopSmartContext = createContext<
@@ -105,7 +109,8 @@ export function ShopSmartProvider({
           // User is signed in.
           const userData: User = {
             uid: firebaseUser.uid,
-            email: firebaseUser.email.toLocaleLowerCase(),
+            email:
+              firebaseUser.email.toLocaleLowerCase(),
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
           };
@@ -197,6 +202,22 @@ export function ShopSmartProvider({
     );
     await updateDoc(listRef, { items: newItems });
   };
+
+  const updateCustomerGroupOrder =
+    async (customerGroupOrder: {
+      [key in GroupId]?: number;
+    }) => {
+      if (!activeListId) return;
+
+      const listRef = doc(
+        db,
+        "shoppingLists",
+        activeListId
+      );
+      await updateDoc(listRef, {
+        customerGroupOrder,
+      });
+    };
 
   const addListMember = async (
     listId: string,
@@ -310,13 +331,14 @@ export function ShopSmartProvider({
     email: string
   ) => {
     if (!activeListId) return;
-   const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = email
+      .toLowerCase()
+      .trim();
     const usersRef = collection(db, "users");
     const q = query(
       usersRef,
       where("email", "==", normalizedEmail) // 3. Query with the lowercase email
     );
-
 
     const querySnapshot = await getDocs(q);
 
@@ -364,6 +386,7 @@ export function ShopSmartProvider({
         addListMember,
         removeListMember,
         addListMemberByEmail,
+        updateCustomerGroupOrder,
       }}
     >
       {children}
