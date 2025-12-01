@@ -28,6 +28,7 @@ import {
   arrayRemove,
   getDocs,
   setDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 type ShopSmartContextType = {
@@ -72,6 +73,8 @@ type ShopSmartContextType = {
   updateCustomerGroupOrder: (customerGroupOrder: {
     [key in GroupId]?: number;
   }) => Promise<void>;
+
+  deleteList: (listId: string) => Promise<void>;
 };
 
 export const ShopSmartContext = createContext<
@@ -247,20 +250,20 @@ export function ShopSmartProvider({
     });
   };
 
-  const [activeListId, setActiveListId] =
-    useState<string | null>(() => {
-      try {
-        return localStorage.getItem(
-          STORAGE_KEYS.ACTIVE_LIST_ID
-        );
-      } catch (error) {
-        console.error(
-          "Error loading active list ID from localStorage:",
-          error
-        );
-        return null;
-      }
-    });
+  const [activeListId, setActiveListId] = useState<string | null>("");
+    // useState<string | null>(() => {
+    //   try {
+    //     return localStorage.getItem(
+    //       STORAGE_KEYS.ACTIVE_LIST_ID
+    //     );
+    //   } catch (error) {
+    //     console.error(
+    //       "Error loading active list ID from localStorage:",
+    //       error
+    //     );
+    //     return null;
+    //   }
+    // });
 
   const [lang, setLang] = useState<Language>(
     () => {
@@ -366,6 +369,16 @@ export function ShopSmartProvider({
   const [isAuthLoading, setIsAuthLoading] =
     useState<boolean>(true);
 
+  const deleteList = async (listId: string) => {
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      listId
+    );
+    if (!listRef) return;
+    await deleteDoc(listRef);
+  };
+
   return (
     <ShopSmartContext.Provider
       value={{
@@ -387,6 +400,7 @@ export function ShopSmartProvider({
         removeListMember,
         addListMemberByEmail,
         updateCustomerGroupOrder,
+        deleteList,
       }}
     >
       {children}

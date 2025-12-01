@@ -1,16 +1,16 @@
 import { TRANSLATIONS } from "@/configuration/constants";
 import { PlusIcon } from "@/configuration/icons";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { ShoppingList } from "@/types";
-import { create } from "domain";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { useContext, useState } from "react";
 
 export default function ListOfLists() {
   const {
-    lists,    
+    lists,
     user,
     lang,
     createNewList,
+    deleteList,
     setActiveListId,
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
@@ -26,6 +26,10 @@ export default function ListOfLists() {
     setNewListName("");
   };
 
+  const handleDeleteList = (listId: string) => {
+    deleteList(listId);
+    setActiveListId("");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-60 overflow-auto">
@@ -35,60 +39,75 @@ export default function ListOfLists() {
         </h3>
         <div className="grid gap-4">
           {lists.map((list) => (
-            <button
+            <div
+              className="w-full flex"
               key={list.id}
-              onClick={() =>
-                setActiveListId(list.id)
-              }
-              className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl">
-                  {list.name
-                    .toLocaleLowerCase()
-                    .includes("grocery") ||
-                  list.name
-                    .toLocaleLowerCase()
-                    .includes("סופר")
-                    ? "🛒"
-                    : "⛺"}
-                </div>
-                <div className="text-start">
-                  <h4 className="font-bold text-gray-800">
-                    {list.name}
-                  </h4>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {
-                      list.items.filter(
-                        (i) => !i.isChecked
-                      ).length
-                    }{" "}
-                    items •{" "}
-                    {list.members.length > 0
-                      ? t.shared_with +
-                        " " +
-                        list.members.length
-                      : ""}
-                  </p>
-                </div>
-              </div>
-              <div className="text-gray-300 rtl:rotate-180">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
+              <div className="bg-white w-full p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                <button
+                  className="flex items-center justify-between w-full"
+                  onClick={() =>
+                    setActiveListId(list.id)
+                  }
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                  />
-                </svg>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl">
+                      {list.name
+                        .toLocaleLowerCase()
+                        .includes("grocery") ||
+                      list.name
+                        .toLocaleLowerCase()
+                        .includes("סופר")
+                        ? "🛒"
+                        : "⛺"}
+                    </div>
+                    <div className="text-start">
+                      <h4 className="font-bold text-gray-800">
+                        {list.name}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {
+                          list.items.filter(
+                            (i) => !i.isChecked
+                          ).length
+                        }{" "}
+                        items •{" "}
+                        {list.members.length > 0
+                          ? t.shared_with +
+                            " " +
+                            list.members.length
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-gray-300 rtl:rotate-180">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                      />
+                    </svg>
+                  </div>
+                </button>
+                <button
+                  onClick={() =>
+                    handleDeleteList(list.id)
+                  }
+                  className="mr-2 p-2  ml-2 hover:bg-gray-100 transition"
+                >
+                  <DeleteOutlinedIcon className="text-gray-500 hover:text-red-500 transition-colors " />
+                </button>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </main>
