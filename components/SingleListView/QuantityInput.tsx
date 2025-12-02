@@ -4,16 +4,19 @@ import { FormControl } from "@mui/material";
 import { ListItem } from "@/types";
 
 interface Props {
-  updateItemQuantity: (
-    itemId: string,
-    quantity: number
-  ) => void;
+ updateItemQuantity: (
+    listId: string,
+    itemToUpdate: ListItem,
+    newQuantity: number
+  ) => Promise<void>;
   item: ListItem;
+  listId: string;
 }
 
 export function QuantityInput({
   updateItemQuantity,
   item,
+  listId,
 }: Props) {
   return (
     <FormControl variant="outlined">
@@ -31,7 +34,8 @@ export function QuantityInput({
             const newQuantity = parseFloat(value);
             if (newQuantity > 0) {
               updateItemQuantity(
-                item.id,
+                listId,
+                item,
                 newQuantity
               );
             }

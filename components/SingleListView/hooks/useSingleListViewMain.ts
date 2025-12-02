@@ -1,126 +1,87 @@
-import { useContext, useMemo, useState } from "react";
+import { useMemo, useState, useContext, useRef } from "react"; // useRef is new
 import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { DEFAULT_GROUPS, TRANSLATIONS } from "@/configuration/constants";
 import { Group, GroupId, ListItem } from "@/types";
+import { DEFAULT_GROUPS } from "@/configuration/constants";
+import { TRANSLATIONS } from "@/configuration/constants";
 
 export function useSingleListViewMain() {
-  const {
-    activeList,
-    lang,
-    setLists,
-    activeListId,
-    user,
-    updateListItems,
-    updateCustomerGroupOrder
-  } = useContext(ShopSmartContext);
-
+  const { activeList, lang, updateCustomerGroupOrder } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [collapsedDoneItems, setCollapsedDoneItems] = useState<boolean>(true);
+
   const [editingItem, setEditingItem] = useState<ListItem | null>(null);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [collapsedDoneItems, setCollapsedDoneItems] = useState(true);
 
+  // This is the single source of truth for the order being displayed.
+  const [sortedGroups, setSortedGroups] = useState<Group[]>([]);
+  
+  // This will hold the original order when the modal is opened, for the "Cancel" action.
+  const originalOrderRef = useRef<Group[]>([]);
 
-  const saveCustomGroupOrder = (reorderedGroups: Group[]) => {
-    if (!activeListId) return;
-    const newOrderMap = reorderedGroups.reduce((acc, group, index) => {
+  // This useMemo now ONLY calculates the order from the database.
+  const groupsFromDB = useMemo(() => {
+    const customOrder = activeList?.customGroupOrder;
+    const groupsToSort: Group[] = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+    if (customOrder) {
+      groupsToSort.sort((a, b) => {
+        const orderA = customOrder[a.id] ?? 99;
+        const orderB = customOrder[b.id] ?? 99;
+        return orderA - orderB;
+      });
+    }
+    return groupsToSort;
+  }, [activeList?.customGroupOrder]);
+
+  // When the modal is NOT open, always show the order from the database.
+  if (!isSettingsModalOpen && sortedGroups !== groupsFromDB) {
+    setSortedGroups(groupsFromDB);
+  }
+
+  const handleOpenSettings = () => {
+    // 1. Set the current state to the DB order.
+    setSortedGroups(groupsFromDB);
+    // 2. Save a copy of this original order in case of cancel.
+    originalOrderRef.current = groupsFromDB;
+    // 3. Open the modal.
+    setIsSettingsModalOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    // On cancel, restore the original order we saved.
+    setSortedGroups(originalOrderRef.current);
+    setIsSettingsModalOpen(false);
+  };
+
+  const handleSaveOrder = async () => {
+    const newOrderMap = sortedGroups.reduce((acc, group, index) => {
       acc[group.id] = index;
       return acc;
     }, {} as { [key in GroupId]?: number });
 
-    updateCustomerGroupOrder(newOrderMap);
-    setIsSettingsModalOpen(false); 
+    await updateCustomerGroupOrder(newOrderMap);
+    setIsSettingsModalOpen(false); // Just close the modal. The state is already correct.
   };
-
-  const updateItemQuantity = (itemId: string, quantity: number) => {
-    if (!activeList) return;
-    const newItems = activeList.items.map((item) =>
-      item.id === itemId ? { ...item, quantity } : item
-    );
-   
-    updateListItems(activeList.id, newItems);
-  };
-
-  const sortedGroups = useMemo(() => {
-    return [...DEFAULT_GROUPS].sort((a, b) => {
-      const orderA = activeList?.customGroupOrder?.[a.id] ?? a.order;
-      const orderB = activeList?.customGroupOrder?.[b.id] ?? b.order;
-      return orderA - orderB;
-    });
-  }, [activeList]);
 
   const groupedItems = useMemo(() => {
     if (!activeList?.items) return [];
-
-    const itemsByGroup = activeList.items.reduce((acc, item) => {
-      const groupId = item.groupId || GroupId.OTHER;
-      if (!acc[groupId]) {
-        acc[groupId] = [];
-      }
-      acc[groupId].push(item);
-      return acc;
-    }, {} as { [key: string]: ListItem[] });
-
-    return sortedGroups
-      .map((group) => ({
-        group,
-        items: itemsByGroup[group.id] || [],
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [activeList, sortedGroups]); // Make sure `activeList` is a dependency
-
-
-
-  const toggleItem = (itemId: string) => {
-
-    if (!activeList) return;
-
-    const newItems = activeList.items.map((item) =>
-      item.id === itemId ? { ...item, isChecked: !item.isChecked } : item
-    );
-    updateListItems(activeList.id, newItems);
-  };
-  const deleteAllDoneItems = () => {
-    if (!activeList) return;
-
-    const newItems = activeList.items.filter((item) => item.isChecked);
-
-    updateListItems(activeList.id, newItems);
-  };
-
-  const deleteItem = (itemId: string) => {
-    if (!activeList) return;
-    const newItems = activeList.items.filter((item) => item.id !== itemId);
-    // Call the context function to update Firestore
-    updateListItems(activeList.id, newItems);
-  };
-
-  const updateItemGroup = (itemId: string, newGroupId: GroupId) => {
-    if (!activeList) return;
-
-    const newItems = activeList.items.map((item) =>
-      item.id === itemId ? { ...item, groupId: newGroupId } : item
-    );
-    updateListItems(activeList.id, newItems);
-    setEditingItem(null);
-  };
+    return sortedGroups.map((group) => ({
+      group,
+      items: activeList.items.filter((item) => item.groupId === group.id),
+    }));
+  }, [activeList?.items, sortedGroups]);
 
   return {
     t,
     groupedItems,
-    toggleItem,
-    user,
-    activeList,
     collapsedDoneItems,
     setCollapsedDoneItems,
-    updateItemQuantity,
-    deleteAllDoneItems,
-    deleteItem,
-    updateItemGroup,
-    setEditingItem,
     editingItem,
+    setEditingItem,
     isSettingsModalOpen,
-    setIsSettingsModalOpen,
-    saveCustomGroupOrder,
     sortedGroups,
+    setSortedGroups, // The modal needs this for dragging
+    handleOpenSettings,
+    handleCloseSettings, // This is now the "Cancel" handler
+    handleSaveOrder,
   };
 }

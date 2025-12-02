@@ -8,17 +8,20 @@ import { QuantityInput } from "./QuantityInput";
 import { ViewItem } from "./ViewItem";
 
 interface Props {
+  listId: string;
   items: ListItem[];
-  toggleItem: (itemId: string) => void;
-  updateItemQuantity: (
-    itemId: string,
-    quantity: number
-  ) => void;
-  deleteItem: (itemId: string) => void;
+  toggleItem: (listId: string, itemToUpdate: ListItem) => void;
+updateItemQuantity: (
+    listId: string,
+    itemToUpdate: ListItem,
+    newQuantity: number
+  ) => Promise<void>;
+  deleteItem: (listId: string, itemId: string) => void;
   setEditingItem: (item: ListItem | null) => void;
 }
 export default function SingleListViewItems({
   items,
+  listId,
   toggleItem,
   updateItemQuantity,
   deleteItem,
@@ -30,6 +33,7 @@ export default function SingleListViewItems({
         <ViewItem
           key={item.id}
           item={item}
+          listId={listId}
           updateItemQuantity={updateItemQuantity}
           toggleItem={toggleItem}
           setEditingItem={setEditingItem}

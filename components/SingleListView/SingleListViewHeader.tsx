@@ -5,7 +5,6 @@ import {
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useSingleListViewHeader } from "./hooks/useSingleListViewHeader";
 import { useState } from "react";
-import { Share } from "@mui/icons-material";
 import ShareListModal from "./modal/ShareListModal";
 
 interface Props {

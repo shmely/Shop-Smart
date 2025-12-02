@@ -9,11 +9,10 @@ export function useSingleListViewFooter() {
   const {
     setNotification,
     lang,
-    setLists,
+    addItemToList,
     activeListId,
     activeList,
     lists,
-    updateListItems,
     user,
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
@@ -59,7 +58,7 @@ export function useSingleListViewFooter() {
       setNewItemText("");
       return;
     }
-    
+
     setNewItemText("");
     setIsCategorizing(true);
 
@@ -75,8 +74,8 @@ export function useSingleListViewFooter() {
       quantity: 1,
     };
 
-    const newItems = [...activeList.items, newItem];
-    updateListItems(activeList.id, newItems);    
+
+    addItemToList(activeList.id, newItem);
 
     setIsCategorizing(false);
 
@@ -100,3 +99,4 @@ export function useSingleListViewFooter() {
     handleAddItem,
   };
 }
+

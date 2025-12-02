@@ -7,17 +7,26 @@ import { QuantityInput } from "./QuantityInput";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 interface Props {
+  listId: string;
   item: ListItem;
   updateItemQuantity: (
-    itemId: string,
-    quantity: number
+    listId: string,
+    itemToUpdate: ListItem,
+    newQuantity: number
+  ) => Promise<void>;
+  toggleItem: (
+    listId: string,
+    itemToUpdate: ListItem
   ) => void;
-  toggleItem: (itemId: string) => void;
   setEditingItem: (item: ListItem | null) => void;
-  deleteItem: (itemId: string) => void;
+  deleteItem: (
+    listId: string,
+    itemId: string
+  ) => void;
 }
 
 export function ViewItem({
+  listId,
   item,
   updateItemQuantity,
   toggleItem,
@@ -32,7 +41,7 @@ export function ViewItem({
       }`}
     >
       <div
-        onClick={() => toggleItem(item.id)}
+        onClick={() => toggleItem(listId, item)}
         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
           item.isChecked
             ? "bg-emerald-500 border-emerald-500 text-white"
@@ -54,6 +63,7 @@ export function ViewItem({
         <QuantityInput
           updateItemQuantity={updateItemQuantity}
           item={item}
+          listId={listId}
         />
       )}
       <button
@@ -65,7 +75,9 @@ export function ViewItem({
       </button>
       <button
         title={`Delete ${item.name}`}
-        onClick={() => deleteItem(item.id)}
+        onClick={() =>
+          deleteItem(listId, item.id)
+        }
         className="text-gray-600 hover:text-red-500 transition-colors"
       >
         <DeleteOutlinedIcon />

@@ -1,5 +1,6 @@
 import React, {
   useContext,
+  useEffect,
   useState,
 } from "react";
 import {
@@ -23,24 +24,26 @@ import { TRANSLATIONS } from "@/configuration/constants";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 
 interface Props {
-  initialGroups: Group[];
+  groups: Group[];
   onClose: () => void;
   onSave: (reorderedGroups: Group[]) => void;
+  onReorder: (reorderedGroups: Group[]) => void;
 }
 
 export default function SettingsModal({
-  initialGroups,
+  groups,
   onClose,
+  onReorder,
   onSave,
 }: Props) {
-  const [groups, setGroups] = useState<Group[]>(initialGroups);
+ 
 
   const sensors = useSensors(
     useSensor(PointerSensor),
-    // Remove the activationConstraint. The handle solves the scroll/drag conflict.
     useSensor(TouchSensor),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+      coordinateGetter:
+        sortableKeyboardCoordinates,
     })
   );
   const { lang } = useContext(ShopSmartContext);
@@ -48,22 +51,18 @@ export default function SettingsModal({
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
-    if (active.id !== over.id) {
-      setGroups((items) => {
-        const oldIndex = items.findIndex(
-          (item) => item.id === active.id
-        );
-        const newIndex = items.findIndex(
-          (item) => item.id === over.id
-        );
-        return arrayMove(
-          items,
-          oldIndex,
-          newIndex
-        );
-      });
+    if (over && active.id !== over.id) {
+      const oldIndex = groups.findIndex((item) => item.id === active.id);
+      const newIndex = groups.findIndex((item) => item.id === over.id);
+      // Call the new onReorder prop to update the parent's state immediately
+      onReorder(arrayMove(groups, oldIndex, newIndex));
     }
   }
+
+  const handleSave = () => {
+    onSave(groups);
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
@@ -109,7 +108,7 @@ export default function SettingsModal({
             {t.cancel}
           </button>
           <button
-            onClick={() => onSave(groups)}
+            onClick={() => handleSave()}
             className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
           >
             {t.save_sorting}

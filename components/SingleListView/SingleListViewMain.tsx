@@ -11,24 +11,32 @@ import { DEFAULT_GROUPS } from "@/configuration/constants";
 import EditCategoryModal from "./modal/EditCategoryModal";
 import SingleListViewHeader from "./SingleListViewHeader";
 import SettingsModal from "./modal/SettingsModal";
+import { useContext } from "react";
+import { ShopSmartContext } from "@/context/ShopSmartContext";
 export default function SingleListViewMain() {
   const {
     t,
     groupedItems,
     collapsedDoneItems,
     setCollapsedDoneItems,
-    deleteAllDoneItems,
     editingItem,
     setEditingItem,
-    updateItemGroup,
-    toggleItem,
-    updateItemQuantity,
-    deleteItem,
-    setIsSettingsModalOpen,
-    saveCustomGroupOrder,
     isSettingsModalOpen,
     sortedGroups,
+    setSortedGroups,
+    handleOpenSettings,
+    handleCloseSettings, // This is for the "Cancel" button
+    handleSaveOrder,
   } = useSingleListViewMain();
+
+  const {
+    deleteAllDoneItems,
+    deleteItem,
+    updateItemQuantity,
+    activeListId,
+    toggleItem,
+    updateItemCategory,
+  } = useContext(ShopSmartContext);
   const doneGroups = groupedItems.filter(
     ({ items }) =>
       items.some((item) => item.isChecked)
@@ -43,11 +51,7 @@ export default function SingleListViewMain() {
 
   return (
     <>
-      <SingleListViewHeader
-        onOpenSettings={() =>
-          setIsSettingsModalOpen(true)
-        }
-      />
+      <SingleListViewHeader onOpenSettings={handleOpenSettings} />
       <main className="flex-1 p-4 pb-60 overflow-auto">
         {groupedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">
@@ -77,6 +81,7 @@ export default function SingleListViewMain() {
                   items={items.filter(
                     (item) => !item.isChecked
                   )}
+                  listId={activeListId}
                   toggleItem={toggleItem}
                   updateItemQuantity={
                     updateItemQuantity
@@ -95,7 +100,11 @@ export default function SingleListViewMain() {
               </span>
               <div className="flex text-gray-500 justify-between align-center w-full ">
                 <button
-                  onClick={deleteAllDoneItems}
+                  onClick={() =>
+                    deleteAllDoneItems(
+                      activeListId
+                    )
+                  }
                   className="text-gray-600 hover:text-red-500 transition-colors"
                 >
                   <DeleteSweepOutlinedIcon fontSize="large" />
@@ -157,6 +166,7 @@ export default function SingleListViewMain() {
                     />
 
                     <SingleListViewItems
+                      listId={activeListId}
                       items={items.filter(
                         (item) => item.isChecked
                       )}
@@ -177,19 +187,19 @@ export default function SingleListViewMain() {
       </main>
       {isSettingsModalOpen && (
         <SettingsModal
-          initialGroups={sortedGroups}
-          onClose={() =>
-            setIsSettingsModalOpen(false)
-          }
-          onSave={saveCustomGroupOrder}
+          groups={sortedGroups}
+          onClose={handleCloseSettings} // <-- Use the cancel handler
+          onReorder={setSortedGroups}
+          onSave={handleSaveOrder}
         />
       )}
       {editingItem && (
         <EditCategoryModal
+          listId={activeListId}
           item={editingItem}
           groups={DEFAULT_GROUPS}
           onClose={() => setEditingItem(null)}
-          onSave={updateItemGroup}
+          onSave={updateItemCategory}
         />
       )}
     </>

@@ -8,16 +8,19 @@ import { TRANSLATIONS } from "@/configuration/constants";
 import { useContext } from "react";
 
 interface Props {
+  listId: string;
   item: ListItem;
   groups: Group[];
   onClose: () => void;
   onSave: (
-    itemId: string,
+    listId: string,
+    itemToUpdate: ListItem,
     newGroupId: GroupId
   ) => void;
 }
 
 export default function EditCategoryModal({
+  listId,
   item,
   groups,
   onClose,
@@ -25,6 +28,11 @@ export default function EditCategoryModal({
 }: Props) {
   const { lang } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
+
+  const handleSave = (newGroupId: GroupId) => {
+    onSave(listId, item, newGroupId);
+    onClose();
+  }
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
@@ -43,9 +51,7 @@ export default function EditCategoryModal({
           {groups.map((group) => (
             <button
               key={group.id}
-              onClick={() =>
-                onSave(item.id, group.id)
-              }
+              onClick={() => handleSave(group.id)}
               className={`w-full text-left flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-emerald-50 transition-colors ${
                 item.groupId === group.id
                   ? "bg-emerald-100 font-bold"
