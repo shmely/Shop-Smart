@@ -12,12 +12,18 @@ export default function ListOfLists() {
     createNewList,
     deleteList,
     setActiveListId,
+    activeList,
   } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
   const [showCreateList, setShowCreateList] =
     useState(false);
   const [newListName, setNewListName] =
     useState("");
+
+  const isOwner =
+    user &&
+    activeList &&
+    user.uid === activeList.ownerId;
 
   const handleCreateList = () => {
     if (!newListName.trim() || !user) return;
@@ -98,14 +104,18 @@ export default function ListOfLists() {
                     </svg>
                   </div>
                 </button>
-                <button
-                  onClick={() =>
-                    handleDeleteList(list.id)
-                  }
-                  className="mr-2 p-2  ml-2 hover:bg-gray-100 transition"
-                >
-                  <DeleteOutlinedIcon className="text-gray-500 hover:text-red-500 transition-colors " />
-                </button>
+                {user &&
+                  list &&
+                  user.uid === list.ownerId && (
+                    <button
+                      onClick={() =>
+                        handleDeleteList(list.id)
+                      }
+                      className="mr-2 p-2  ml-2 hover:bg-gray-100 transition"
+                    >
+                      <DeleteOutlinedIcon className="text-gray-500 hover:text-red-500 transition-colors " />
+                    </button>
+                  )}
               </div>
             </div>
           ))}
