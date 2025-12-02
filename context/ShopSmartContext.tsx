@@ -69,7 +69,7 @@ type ShopSmartContextType = {
   ) => Promise<void>;
   addListMemberByEmail: (
     email: string
-  ) => Promise<void>;
+  ) => Promise<{ subject: string; body: string } | null>;
   updateCustomerGroupOrder: (customerGroupOrder: {
     [key in GroupId]?: number;
   }) => Promise<void>;
@@ -108,30 +108,49 @@ export function ShopSmartProvider({
     const unsubscribe = onAuthStateChanged(
       auth,
       async (firebaseUser) => {
+        setIsAuthLoading(true);
         if (firebaseUser) {
           // User is signed in.
           const userData: User = {
             uid: firebaseUser.uid,
-            email:
-              firebaseUser.email.toLocaleLowerCase(),
+            email: firebaseUser.email
+              ? firebaseUser.email.toLowerCase()
+              : null,
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
           };
           setUser(userData);
-          const userRef = doc(
-            db,
-            "users",
-            firebaseUser.uid
-          );
+          const userRef = doc(db, "users", firebaseUser.uid);
           await setDoc(
             userRef,
             {
-              email: firebaseUser.email,
-              displayName:
-                firebaseUser.displayName,
+              email: firebaseUser.email ? firebaseUser.email.toLowerCase() : null,
+              displayName: firebaseUser.displayName,
             },
             { merge: true }
           );
+
+          // --- HANDLE PENDING INVITATION ---
+          const pendingListId = sessionStorage.getItem('pendingInvitation');
+          const userEmail = firebaseUser.email?.toLowerCase();
+
+          if (pendingListId && userEmail) {
+            const listRef = doc(db, "shoppingLists", pendingListId);
+            
+            // Add the new user's UID to the members array
+            // AND remove their email from pendingInvites in one atomic operation
+            await updateDoc(listRef, {
+              members: arrayUnion(firebaseUser.uid),
+              pendingInvites: arrayRemove(userEmail),
+            });
+            
+            // Clear the stored invitation
+            sessionStorage.removeItem('pendingInvitation');
+            
+            // Set this as the active list for a great UX!
+            setActiveListId(pendingListId);
+          }
+
         } else {
           // User is signed out.
           setUser(null);
@@ -251,19 +270,7 @@ export function ShopSmartProvider({
   };
 
   const [activeListId, setActiveListId] = useState<string | null>("");
-    // useState<string | null>(() => {
-    //   try {
-    //     return localStorage.getItem(
-    //       STORAGE_KEYS.ACTIVE_LIST_ID
-    //     );
-    //   } catch (error) {
-    //     console.error(
-    //       "Error loading active list ID from localStorage:",
-    //       error
-    //     );
-    //     return null;
-    //   }
-    // });
+
 
   const [lang, setLang] = useState<Language>(
     () => {
@@ -330,38 +337,60 @@ export function ShopSmartProvider({
     );
   }, [lists, activeListId]);
 
-  const addListMemberByEmail = async (
+   const addListMemberByEmail = async (
     email: string
-  ) => {
-    if (!activeListId) return;
-    const normalizedEmail = email
-      .toLowerCase()
-      .trim();
-    const usersRef = collection(db, "users");
-    const q = query(
-      usersRef,
-      where("email", "==", normalizedEmail) // 3. Query with the lowercase email
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      throw new Error(
-        "User with that email not found."
-      );
+  ): Promise<{ subject: string; body: string } | null> => {
+    if (!activeListId || !activeList) {
+      throw new Error("No active list selected.");
     }
+    const normalizedEmail = email.toLowerCase().trim();
+    const listRef = doc(db, "shoppingLists", activeListId);
 
-    const memberUid = querySnapshot.docs[0].id;
-
-    // 2. Add the UID to the list's members array
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      activeListId
+    // Check if a user with this email already exists
+    const userQuery = query(
+      collection(db, "users"),
+      where("email", "==", normalizedEmail)
     );
-    await updateDoc(listRef, {
-      members: arrayUnion(memberUid),
-    });
+    const userSnapshot = await getDocs(userQuery);
+
+    if (!userSnapshot.empty) {
+      // --- CASE 1: User Exists ---
+      const memberUid = userSnapshot.docs[0].id;
+
+      // Check if they are already a full member
+      if (activeList.members.includes(memberUid)) {
+        throw new Error("This user is already a member of the list.");
+      }
+
+      // User exists but is not a member. Add them and clean up any pending invite.
+      await updateDoc(listRef, {
+        members: arrayUnion(memberUid),
+        pendingInvites: arrayRemove(normalizedEmail), // Clean up stale invite
+      });
+      return null; // Success, no email needed.
+    } else {
+      // --- CASE 2: User Does NOT Exist ---
+
+      // Check if they already have a pending invite
+      if (activeList.pendingInvites?.includes(normalizedEmail)) {
+        throw new Error("This user already has a pending invitation.");
+      }
+
+      // Add to pendingInvites on Firebase
+      await updateDoc(listRef, {
+        pendingInvites: arrayUnion(normalizedEmail),
+      });
+
+      // Generate the email content for manual sending
+      const inviterName = user?.displayName || "A friend";
+      const appUrl = "https://your-app-domain.web.app"; // CHANGE THIS
+      const joinLink = `${appUrl}/join?listId=${activeListId}`;
+
+      const subject = `You're invited to the "${activeList.name}" list on Shop Smart!`;
+      const body = `Hi there,\n\n${inviterName} has invited you to collaborate on the "${activeList.name}" shopping list.\n\nClick the link below to join:\n${joinLink}\n\nThanks,\nThe Shop Smart Team`;
+
+      return { subject, body };
+    }
   };
 
   const [notification, setNotification] =

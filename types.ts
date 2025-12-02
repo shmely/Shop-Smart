@@ -41,6 +41,7 @@ export interface ShoppingList {
   members: string[]; // Array of User IDs
   items: ListItem[];
   customGroupOrder?: { [key in GroupId]?: number }; // Allow users to override default order
+  pendingInvites?: string[]; 
 }
 
 

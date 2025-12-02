@@ -29,15 +29,29 @@ export default function ShareListModal({
   const [email, setEmail] = useState<string>("");
 
   const handleAddMember = async () => {
-    if (!activeList) return;
+    if (!email.trim()) return;
     try {
-      await addListMemberByEmail(email);
-      setIsOpen(false);
+      const result = await addListMemberByEmail(email);
+
+      if (result) {
+        // --- User did NOT exist ---
+        // Display the generated text for the user to copy
+        const fullEmailText = `Subject: ${result.subject}\n\n${result.body}`;
+        alert(
+          "This user hasn't signed up yet. Copy the text below and send it to them in an email:"
+        );
+        // A better UI would show this in a read-only textarea
+        prompt("Email Content:", fullEmailText);
+        setEmail("");
+      } else {
+        // --- User existed and was added ---
+        alert("Success! User has been added to the list.");
+        setEmail("");
+      }
     } catch (error) {
-      console.error(
-        "Error adding list member:",
-        error
-      );
+      if (error instanceof Error) {
+        alert(`Error: ${error.message}`);
+      }
     }
   };
 
