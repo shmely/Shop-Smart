@@ -60,6 +60,7 @@ export interface Notification {
 }
 
 export interface ProductCacheItem {
+  id: string;
   name: string;
   groupId: GroupId;
   addedAt: number;

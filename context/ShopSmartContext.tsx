@@ -30,6 +30,7 @@ import {
   setDoc,
   deleteDoc,
 } from "firebase/firestore";
+import { FirebaseProductCacheService } from '../services/firebaseProductCacheService';
 
 type ShopSmartContextType = {
   user: User | null;
@@ -58,10 +59,6 @@ type ShopSmartContextType = {
   updateListItems: (
     listId: string,
     newItems: ListItem[]
-  ) => Promise<void>;
-  addListMember: (
-    listId: string,
-    memberUid: string
   ) => Promise<void>;
   removeListMember: (
     listId: string,
@@ -240,20 +237,7 @@ export function ShopSmartProvider({
         customerGroupOrder,
       });
     };
-
-  const addListMember = async (
-    listId: string,
-    memberUid: string
-  ) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    await updateDoc(listRef, {
-      members: arrayUnion(memberUid),
-    });
-  };
+  
 
   const removeListMember = async (
     listId: string,
@@ -365,9 +349,9 @@ export function ShopSmartProvider({
       // User exists but is not a member. Add them and clean up any pending invite.
       await updateDoc(listRef, {
         members: arrayUnion(memberUid),
-        pendingInvites: arrayRemove(normalizedEmail), // Clean up stale invite
+        pendingInvites: arrayRemove(normalizedEmail), // <-- This is the "remove and add" logic you remember
       });
-      return null; // Success, no email needed.
+      return null;
     } else {
       // --- CASE 2: User Does NOT Exist ---
 
@@ -382,12 +366,11 @@ export function ShopSmartProvider({
       });
 
       // Generate the email content for manual sending
-      const inviterName = user?.displayName || "A friend";
-      const appUrl = "https://your-app-domain.web.app"; // CHANGE THIS
+      const appUrl = process.env.REACT_APP_BASE_URL || "https://your-app-domain.web.app";
       const joinLink = `${appUrl}/join?listId=${activeListId}`;
 
-      const subject = `You're invited to the "${activeList.name}" list on Shop Smart!`;
-      const body = `Hi there,\n\n${inviterName} has invited you to collaborate on the "${activeList.name}" shopping list.\n\nClick the link below to join:\n${joinLink}\n\nThanks,\nThe Shop Smart Team`;
+      const subject = `Invitation to join "${activeList.name}" on Shop Smart`;
+      const body = joinLink; // The body is now just the URL
 
       return { subject, body };
     }
@@ -408,6 +391,16 @@ export function ShopSmartProvider({
     await deleteDoc(listRef);
   };
 
+  useEffect(() => {
+    // Subscribe to real-time cache updates when the app loads
+    const unsubscribeCache = FirebaseProductCacheService.subscribeToCache();
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      unsubscribeCache();
+    };
+  }, []);
+
   return (
     <ShopSmartContext.Provider
       value={{
@@ -425,7 +418,6 @@ export function ShopSmartProvider({
         isAuthLoading,
         createNewList,
         updateListItems,
-        addListMember,
         removeListMember,
         addListMemberByEmail,
         updateCustomerGroupOrder,

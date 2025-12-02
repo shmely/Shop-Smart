@@ -3,7 +3,7 @@ import { GroupId } from "../types";
 import { ProductCacheItemsService } from "./ProductCacheItemService";
 
 // Initialize Gemini
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const genAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const categorizeItem = async (itemName: string, language: 'he' | 'en'): Promise<GroupId> => {
   try {
@@ -29,12 +29,15 @@ export const categorizeItem = async (itemName: string, language: 'he' | 'en'): P
       - ${GroupId.CLEANING}
       - ${GroupId.BUTCHER}
       - ${GroupId.OTHER}
+      - ${GroupId.FISHS}
+      - ${GroupId.DRINKS}
+      - ${GroupId.ALCOHOL}
      
 
       Return ONLY the Group ID as a string. If unsure, use ${GroupId.OTHER}.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: modelId,
       contents: prompt,
       config: {
