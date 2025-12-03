@@ -13,6 +13,7 @@ import SingleListViewHeader from "./SingleListViewHeader";
 import SettingsModal from "./modal/SettingsModal";
 import { useContext } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
+import { UserContext } from "@/context/UserContext";
 export default function SingleListViewMain() {
   const {
     t,
@@ -33,10 +34,12 @@ export default function SingleListViewMain() {
     deleteAllDoneItems,
     deleteItem,
     updateItemQuantity,
-    activeListId,
     toggleItem,
     updateItemCategory,
   } = useContext(ShopSmartContext);
+
+  const { activeListId } =
+    useContext(UserContext);
   const doneGroups = groupedItems.filter(
     ({ items }) =>
       items.some((item) => item.isChecked)
@@ -51,7 +54,9 @@ export default function SingleListViewMain() {
 
   return (
     <>
-      <SingleListViewHeader onOpenSettings={handleOpenSettings} />
+      <SingleListViewHeader
+        onOpenSettings={handleOpenSettings}
+      />
       <main className="flex-1 p-4 pb-60 overflow-auto">
         {groupedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">

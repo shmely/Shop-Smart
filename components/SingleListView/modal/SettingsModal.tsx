@@ -22,6 +22,7 @@ import { Group } from "@/types";
 import { SortableCategoryItem } from "../SortableCategoryItem";
 import { TRANSLATIONS } from "@/configuration/constants";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
+import { UserContext } from "@/context/UserContext";
 
 interface Props {
   groups: Group[];
@@ -46,7 +47,7 @@ export default function SettingsModal({
         sortableKeyboardCoordinates,
     })
   );
-  const { lang } = useContext(ShopSmartContext);
+  const { lang } = useContext(UserContext);
   const t = TRANSLATIONS[lang];
 
   function handleDragEnd(event: any) {

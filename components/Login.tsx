@@ -8,11 +8,12 @@ import {
   signInWithPopup,  
 } from "firebase/auth";
 import { auth } from "../firebase"; 
+import { UserContext } from "@/context/UserContext";
 
 export default function Login() {
  
   const { lang, setLang, setUser, isAuthLoading } =
-    useContext(ShopSmartContext);
+    useContext(UserContext);
 
   if (isAuthLoading) {
     return (

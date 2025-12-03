@@ -10,18 +10,17 @@ import ListOfLists from "./components/ListOfLists";
 import {} from "./configuration/icons";
 import SingleListView from "./components/SingleListView/SingleListView";
 import { NotificationToast } from "./components/NotificationToast";
+import { UserContext } from "./context/UserContext";
 
 // --- Main App Component ---
 export default function App() {
   // --- State ---
-  const {
-    lang,
-    user,
-    activeListId,
-    setNotification,
-    isAuthLoading,
-    
-  } = useContext(ShopSmartContext);
+  const { setNotification } = useContext(
+    ShopSmartContext
+  );
+
+  const { lang, user, isAuthLoading, activeListId } =
+    useContext(UserContext);
   const t = TRANSLATIONS[lang];
   useEffect(() => {
     document.documentElement.dir =

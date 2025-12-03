@@ -1,29 +1,26 @@
 import { TRANSLATIONS } from "@/configuration/constants";
 import { PlusIcon } from "@/configuration/icons";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
+import { UserContext } from "@/context/UserContext";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { useContext, useState } from "react";
 
 export default function ListOfLists() {
+  const { createNewList, deleteList } =
+    useContext(ShopSmartContext);
+
   const {
-    lists,
-    user,
     lang,
-    createNewList,
-    deleteList,
-    setActiveListId,
+    user,
     activeList,
-  } = useContext(ShopSmartContext);
+    setActiveListId,
+    lists,
+  } = useContext(UserContext);
   const t = TRANSLATIONS[lang];
   const [showCreateList, setShowCreateList] =
     useState(false);
   const [newListName, setNewListName] =
     useState("");
-
-  const isOwner =
-    user &&
-    activeList &&
-    user.uid === activeList.ownerId;
 
   const handleCreateList = () => {
     if (!newListName.trim() || !user) return;

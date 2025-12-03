@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ShopSmartProvider } from "./context/ShopSmartContext";
 import Header from "./components/Header/Header";
+import { UserProvider } from "./context/UserContext";
 
 const rootElement =
   document.getElementById("root");
@@ -15,9 +16,11 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ShopSmartProvider>
-      <Header />
-      <App />
-    </ShopSmartProvider>
+    <UserProvider>
+      <ShopSmartProvider>
+        <Header />
+        <App />
+      </ShopSmartProvider>
+    </UserProvider>
   </React.StrictMode>
 );

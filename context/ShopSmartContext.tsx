@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import {
-  Language,
   ShoppingList,
   Notification,
   User,
@@ -11,16 +10,14 @@ import {
 import {
   createContext,
   useState,
-  useEffect,
   ReactNode,
 } from "react";
-import { auth, db } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { db } from "../firebase";
+
 import {
   collection,
   query,
   where,
-  onSnapshot,
   doc,
   updateDoc,
   addDoc,
@@ -28,31 +25,18 @@ import {
   arrayRemove,
   getDocs,
   getDoc,
-  setDoc,
   deleteDoc,
 } from "firebase/firestore";
 import { FirebaseProductCacheService } from "../services/firebaseProductCacheService";
 
-type ShopSmartContextType = {
-  user: User | null;
-  lang: Language;
-  lists: ShoppingList[];
-  activeListId?: string | null;
-  activeList: ShoppingList | null;
+type ShopSmartContextType = { 
+  
   notification: Notification | null;
-  isAuthLoading: boolean;
-  setUser: React.Dispatch<
-    React.SetStateAction<User | null>
-  >;
-  setLang: React.Dispatch<
-    React.SetStateAction<Language>
-  >;
+  
   setLists: React.Dispatch<
     React.SetStateAction<ShoppingList[]>
   >;
-  setActiveListId: React.Dispatch<
-    React.SetStateAction<string | null>
-  >;
+
   setNotification: React.Dispatch<
     React.SetStateAction<Notification | null>
   >;
@@ -67,7 +51,7 @@ type ShopSmartContextType = {
     subject: string;
     body: string;
   } | null>;
-  updateCustomerGroupOrder: (customerGroupOrder: {
+  updateCustomGroupOrder: (customeGroupOrder: {
     [key in GroupId]?: number;
   }) => Promise<void>;
 
@@ -108,137 +92,12 @@ interface ShopSmartProviderProps {
   children: ReactNode;
 }
 
-const STORAGE_KEYS = {
-  LISTS: "shop-smart-lists",
-  USER: "shop-smart-user",
-  ACTIVE_LIST_ID: "shop-smart-active-list-id",
-  LANGUAGE: "shop-smart-language",
-};
-
 export function ShopSmartProvider({
   children,
 }: ShopSmartProviderProps) {
   const [user, setUser] = useState<User | null>(
     null
   );
-
-  const [lists, setLists] = useState<
-    ShoppingList[]
-  >([]);
-
-  useEffect(() => {
-    // This listener runs once on load, and again whenever the user logs in or out.
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      async (firebaseUser) => {
-        setIsAuthLoading(true);
-        if (firebaseUser) {
-          // User is signed in.
-          const userData: User = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email
-              ? firebaseUser.email.toLowerCase()
-              : null,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-          };
-          setUser(userData);
-          const userRef = doc(
-            db,
-            "users",
-            firebaseUser.uid
-          );
-          await setDoc(
-            userRef,
-            {
-              email: firebaseUser.email
-                ? firebaseUser.email.toLowerCase()
-                : null,
-              displayName:
-                firebaseUser.displayName,
-            },
-            { merge: true }
-          );
-
-          // --- HANDLE PENDING INVITATION ---
-          const pendingListId =
-            sessionStorage.getItem(
-              "pendingInvitation"
-            );
-          const userEmail =
-            firebaseUser.email?.toLowerCase();
-
-          if (pendingListId && userEmail) {
-            const listRef = doc(
-              db,
-              "shoppingLists",
-              pendingListId
-            );
-
-            // Add the new user's UID to the members array
-            // AND remove their email from pendingInvites in one atomic operation
-            await updateDoc(listRef, {
-              members: arrayUnion(
-                firebaseUser.uid
-              ),
-              pendingInvites:
-                arrayRemove(userEmail),
-            });
-
-            // Clear the stored invitation
-            sessionStorage.removeItem(
-              "pendingInvitation"
-            );
-
-            // Set this as the active list for a great UX!
-            setActiveListId(pendingListId);
-          }
-        } else {
-          // User is signed out.
-          setUser(null);
-          setLists([]); // Clear lists on logout
-        }
-        // 3. Once we have a definitive answer, set loading to false.
-        setIsAuthLoading(false);
-      }
-    );
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user?.uid) return; // Don't query if there's no user
-
-    setIsAuthLoading(true);
-    const listsRef = collection(
-      db,
-      "shoppingLists"
-    );
-    // This query is the core of your security model:
-    // It only fetches lists where the current user's UID is in the 'members' array.
-    const q = query(
-      listsRef,
-      where("members", "array-contains", user.uid)
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const userLists: ShoppingList[] = [];
-        querySnapshot.forEach((doc) => {
-          userLists.push({
-            id: doc.id,
-            ...doc.data(),
-          } as ShoppingList);
-        });
-        setLists(userLists);
-        setIsAuthLoading(false);
-      }
-    );
-
-    return () => unsubscribe(); // Cleanup listener on unmount or user change
-  }, [user]);
 
   const createNewList = async (name: string) => {
     if (!user)
@@ -255,10 +114,12 @@ export function ShopSmartProvider({
     );
   };
 
-  const updateCustomerGroupOrder =
+  const updateCustomGroupOrder =
     async (customerGroupOrder: {
-      [key in GroupId]?: number;
-    }) => {
+      [key in GroupId]?: number
+      
+
+    }, activeListId?: string | null) => {
       if (!activeListId) return;
 
       const listRef = doc(
@@ -285,73 +146,9 @@ export function ShopSmartProvider({
     });
   };
 
-  const [activeListId, setActiveListId] =
-    useState<string | null>("");
+  
 
-  const [lang, setLang] = useState<Language>(
-    () => {
-      try {
-        const savedLang = localStorage.getItem(
-          STORAGE_KEYS.LANGUAGE
-        );
-        return savedLang
-          ? JSON.parse(savedLang)
-          : Language.HE;
-      } catch (error) {
-        console.error(
-          "Error loading language from localStorage:",
-          error
-        );
-        return Language.HE;
-      }
-    }
-  );
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEYS.LANGUAGE,
-        JSON.stringify(lang)
-      );
-    } catch (error) {
-      console.error(
-        "Error saving language to localStorage:",
-        error
-      );
-    }
-  }, [lang]);
-
-  useEffect(() => {
-    try {
-      if (activeListId) {
-        localStorage.setItem(
-          STORAGE_KEYS.ACTIVE_LIST_ID,
-          activeListId
-        );
-      } else {
-        // Also remove it from storage if it becomes null
-        localStorage.removeItem(
-          STORAGE_KEYS.ACTIVE_LIST_ID
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Error saving active list ID to localStorage:",
-        error
-      );
-    }
-  }, [activeListId]);
-
-  const activeList = useMemo(() => {
-    if (!activeListId) {
-      return null;
-    }
-    return (
-      lists.find(
-        (list) => list.id === activeListId
-      ) || null
-    );
-  }, [lists, activeListId]);
+  
 
   const addListMemberByEmail = async (
     email: string
@@ -435,8 +232,6 @@ export function ShopSmartProvider({
 
   const [notification, setNotification] =
     useState<Notification | null>(null);
-  const [isAuthLoading, setIsAuthLoading] =
-    useState<boolean>(true);
 
   const deleteItem = async (
     listId: string,
@@ -655,23 +450,13 @@ export function ShopSmartProvider({
   return (
     <ShopSmartContext.Provider
       value={{
-        user,
-        setUser,
-        lang,
-        setLang,
-        lists,
-        setLists,
         notification,
-        activeListId,
-        setActiveListId,
         setNotification,
-        activeList,
-        isAuthLoading,
         createNewList,
         removeListMember,
         deleteAllDoneItems,
         addListMemberByEmail,
-        updateCustomerGroupOrder,
+        updateCustomGroupOrder,
         updateItemCategory,
         toggleItem,
         addItemToList,

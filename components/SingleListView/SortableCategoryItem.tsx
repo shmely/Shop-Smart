@@ -1,10 +1,10 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Group } from "@/types";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import { TRANSLATIONS } from "@/configuration/constants";
-import { ShopSmartContext } from "@/context/ShopSmartContext";
+import { UserContext } from "@/context/UserContext";
 
 interface Props {
   group: Group;
@@ -20,7 +20,7 @@ export function SortableCategoryItem({
     transform,
     transition,
   } = useSortable({ id: group.id });
-  const { lang } = useContext(ShopSmartContext);
+  const { lang } = useContext(UserContext);
   const t = TRANSLATIONS[lang]; // Assuming 'en' for simplicity; replace with actual lang context if needed
   const style = {
     transform: CSS.Transform.toString(transform),

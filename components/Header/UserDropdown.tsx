@@ -1,9 +1,10 @@
-import { ShopSmartContext } from "@/context/ShopSmartContext";
+
 import { TRANSLATIONS } from "@/configuration/constants";
 import { Language } from "@/types";
 import { useContext } from "react";
 import { auth } from "../../firebase";
 import { signOut } from "firebase/auth";
+import { UserContext } from "@/context/UserContext";
 
 interface UserDropdownProps {
   showDropdown: boolean;
@@ -18,7 +19,7 @@ export default function UserDropdown({
   imageError, 
   getInitials 
 }: UserDropdownProps) {
-  const { user, lang, setLang, setUser } = useContext(ShopSmartContext);
+  const { user, lang, setLang, setUser } = useContext(UserContext);
   const t = TRANSLATIONS[lang];
 
   if (!user) return null;

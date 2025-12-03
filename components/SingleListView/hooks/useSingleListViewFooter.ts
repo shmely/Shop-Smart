@@ -4,17 +4,17 @@ import { categorizeItem } from "@/services/geminiService";
 import { ProductCacheItemsService } from '../../../services/ProductCacheItemService'
 import { ListItem } from "@/types";
 import { TRANSLATIONS } from "@/configuration/constants";
+import { UserContext } from "@/context/UserContext";
 
 export function useSingleListViewFooter() {
   const {
-    setNotification,
     lang,
-    addItemToList,
     activeListId,
     activeList,
     lists,
     user,
-  } = useContext(ShopSmartContext);
+  } = useContext(UserContext);
+  const { setNotification, addItemToList } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
   const [newItemText, setNewItemText] = useState("");
   const [isCategorizing, setIsCategorizing] = useState(false);

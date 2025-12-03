@@ -1,4 +1,3 @@
-import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { TRANSLATIONS } from "@/configuration/constants";
 import {
   useContext,
@@ -7,11 +6,10 @@ import {
   useEffect,
 } from "react";
 import UserDropdown from "./UserDropdown";
+import { UserContext } from "@/context/UserContext";
 
 export default function Header() {
-  const { user, lang, setLang } = useContext(
-    ShopSmartContext
-  );
+  const { user, lang } = useContext(UserContext);
   const t = TRANSLATIONS[lang];
   const [imageError, setImageError] =
     useState(false);
@@ -100,7 +98,8 @@ export default function Header() {
 
         <div>
           <h2 className="font-bold text-gray-800 text-lg">
-            {t.welcome}, {user.displayName.split(" ")[0]}
+            {t.welcome},{" "}
+            {user.displayName.split(" ")[0]}
           </h2>
         </div>
       </div>

@@ -1,11 +1,13 @@
 import { useMemo, useState, useContext, useRef } from "react"; // useRef is new
-import { ShopSmartContext } from "@/context/ShopSmartContext";
+import { UserContext } from "@/context/UserContext";
 import { Group, GroupId, ListItem } from "@/types";
 import { DEFAULT_GROUPS } from "@/configuration/constants";
 import { TRANSLATIONS } from "@/configuration/constants";
+import { ShopSmartContext } from "@/context/ShopSmartContext";
 
 export function useSingleListViewMain() {
-  const { activeList, lang, updateCustomerGroupOrder } = useContext(ShopSmartContext);
+  const { activeList, lang, } = useContext(UserContext);
+  const { updateCustomGroupOrder } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
 
   const [editingItem, setEditingItem] = useState<ListItem | null>(null);
@@ -14,7 +16,7 @@ export function useSingleListViewMain() {
 
   // This is the single source of truth for the order being displayed.
   const [sortedGroups, setSortedGroups] = useState<Group[]>([]);
-  
+
   // This will hold the original order when the modal is opened, for the "Cancel" action.
   const originalOrderRef = useRef<Group[]>([]);
 
@@ -58,7 +60,7 @@ export function useSingleListViewMain() {
       return acc;
     }, {} as { [key in GroupId]?: number });
 
-    await updateCustomerGroupOrder(newOrderMap);
+    await updateCustomGroupOrder(newOrderMap);
     setIsSettingsModalOpen(false); // Just close the modal. The state is already correct.
   };
 
