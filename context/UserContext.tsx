@@ -4,7 +4,7 @@ import {
   User,
 } from "../types";
 import {
-  createContext, 
+  createContext,
   useState,
   useEffect,
   ReactNode,
@@ -20,11 +20,19 @@ import {
   where,
   onSnapshot,
   doc,
-  updateDoc, 
+  updateDoc,
   arrayUnion,
   arrayRemove,
-  setDoc, 
+  setDoc,
+  getDocs,
 } from "firebase/firestore";
+
+const STORAGE_KEYS = {
+  LISTS: "shop-smart-lists",
+  USER: "shop-smart-user",
+  ACTIVE_LIST_ID: "shop-smart-active-list-id",
+  LANGUAGE: "shop-smart-language",
+};
 
 type UserContextType = {
   user: User | null;
@@ -41,9 +49,7 @@ type UserContextType = {
     React.SetStateAction<ShoppingList[]>
   >;
   activeListId?: string | null;
-  setActiveListId: React.Dispatch<
-    React.SetStateAction<string | null>
-  >;
+  updateActiveList: (id: string | null) => void;
   activeList: ShoppingList | null;
 };
 
@@ -58,12 +64,6 @@ interface UserProviderProps {
 export const UserProvider = ({
   children,
 }: UserProviderProps) => {
-  const STORAGE_KEYS = {
-    LISTS: "shop-smart-lists",
-    USER: "shop-smart-user",
-    ACTIVE_LIST_ID: "shop-smart-active-list-id",
-    LANGUAGE: "shop-smart-language",
-  };
   const [user, setUser] = useState<User | null>(
     null
   );
@@ -75,9 +75,22 @@ export const UserProvider = ({
   const [lists, setLists] = useState<
     ShoppingList[]
   >([]);
-  const [activeListId, setActiveListId] =
-    useState<string | null>("");
+  const [activeListId, setactiveListId] =
+    useState<string | null>(
+      localStorage.getItem(
+        STORAGE_KEYS.ACTIVE_LIST_ID
+      )
+    );
 
+  const updateActiveList = (
+    id: string | null
+  ) => {
+    setactiveListId(id);
+    localStorage.setItem(
+      STORAGE_KEYS.ACTIVE_LIST_ID,
+      id
+    );
+  };
   useEffect(() => {
     // This listener runs once on load, and again whenever the user logs in or out.
     const unsubscribe = onAuthStateChanged(
@@ -143,7 +156,7 @@ export const UserProvider = ({
             );
 
             // Set this as the active list for a great UX!
-            setActiveListId(pendingListId);
+            setactiveListId(pendingListId);
           }
         } else {
           // User is signed out.
@@ -169,7 +182,7 @@ export const UserProvider = ({
       ) || null
     );
   }, [lists, activeListId]);
-  
+
   useEffect(() => {
     if (!user?.uid) return; // Don't query if there's no user
 
@@ -196,6 +209,7 @@ export const UserProvider = ({
           } as ShoppingList);
         });
         setLists(userLists);
+        console.log("userLists:", userLists);
         setIsAuthLoading(false);
       }
     );
@@ -217,6 +231,93 @@ export const UserProvider = ({
     }
   }, [lang]);
 
+  const addListMemberByEmail = async (
+    email: string
+  ): Promise<{
+    subject: string;
+    body: string;
+  } | null> => {
+    if (!activeListId || !activeList) {
+      throw new Error("No active list selected.");
+    }
+    const normalizedEmail = email
+      .toLowerCase()
+      .trim();
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      activeListId
+    );
+
+    // Check if a user with this email already exists
+    const userQuery = query(
+      collection(db, "users"),
+      where("email", "==", normalizedEmail)
+    );
+    const userSnapshot = await getDocs(userQuery);
+
+    if (!userSnapshot.empty) {
+      // --- CASE 1: User Exists ---
+      const memberUid = userSnapshot.docs[0].id;
+
+      // Check if they are already a full member
+      if (
+        activeList.members.includes(memberUid)
+      ) {
+        throw new Error(
+          "This user is already a member of the list."
+        );
+      }
+
+      // User exists but is not a member. Add them and clean up any pending invite.
+      await updateDoc(listRef, {
+        members: arrayUnion(memberUid),
+        pendingInvites: arrayRemove(
+          normalizedEmail
+        ), // <-- This is the "remove and add" logic you remember
+      });
+      return null;
+    } else {
+      // --- CASE 2: User Does NOT Exist ---
+
+      // Check if they already have a pending invite
+      if (
+        activeList.pendingInvites?.includes(
+          normalizedEmail
+        )
+      ) {
+        throw new Error(
+          "This user already has a pending invitation."
+        );
+      }
+
+      // Add to pendingInvites on Firebase
+      await updateDoc(listRef, {
+        pendingInvites: arrayUnion(
+          normalizedEmail
+        ),
+      });
+
+      // Generate the email content for manual sending
+      const appUrl =
+        process.env.REACT_APP_BASE_URL ||
+        "https://your-app-domain.web.app";
+      const joinLink = `${appUrl}/join?listId=${activeListId}`;
+
+      const subject = `Invitation to join "${activeList.name}" on Shop Smart`;
+      const body = joinLink; // The body is now just the URL
+
+      return { subject, body };
+    }
+  };
+
+  // useEffect(() => {
+  //   localStorage.setItem(
+  //     STORAGE_KEYS.ACTIVE_LIST_ID,
+  //     activeListId
+  //   );
+  // }, [activeListId]);
+
   return (
     <UserContext.Provider
       value={{
@@ -229,7 +330,7 @@ export const UserProvider = ({
         setLists,
         activeList,
         activeListId,
-        setActiveListId,
+        updateActiveList,
       }}
     >
       {children}

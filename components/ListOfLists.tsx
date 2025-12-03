@@ -9,13 +9,8 @@ export default function ListOfLists() {
   const { createNewList, deleteList } =
     useContext(ShopSmartContext);
 
-  const {
-    lang,
-    user,
-    activeList,
-    setActiveListId,
-    lists,
-  } = useContext(UserContext);
+  const { lang, user, updateActiveList, lists } =
+    useContext(UserContext);
   const t = TRANSLATIONS[lang];
   const [showCreateList, setShowCreateList] =
     useState(false);
@@ -31,7 +26,7 @@ export default function ListOfLists() {
 
   const handleDeleteList = (listId: string) => {
     deleteList(listId);
-    setActiveListId("");
+    updateActiveList("");
   };
 
   return (
@@ -50,7 +45,7 @@ export default function ListOfLists() {
                 <button
                   className="flex items-center justify-between w-full"
                   onClick={() =>
-                    setActiveListId(list.id)
+                    updateActiveList(list.id)
                   }
                 >
                   <div className="flex items-center gap-4">

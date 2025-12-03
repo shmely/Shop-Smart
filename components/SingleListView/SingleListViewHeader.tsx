@@ -3,9 +3,9 @@ import {
   ShareIcon,
 } from "@/configuration/icons";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { useSingleListViewHeader } from "./hooks/useSingleListViewHeader";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ShareListModal from "./modal/ShareListModal";
+import { UserContext } from "@/context/UserContext";
 
 interface Props {
   onOpenSettings: () => void; // Add this prop
@@ -14,15 +14,15 @@ interface Props {
 export default function SingleListViewHeader({
   onOpenSettings,
 }: Props) {
-  const { activeList, setActiveListId } =
-    useSingleListViewHeader();
+  const { activeList, updateActiveList } =
+    useContext(UserContext);
   const [shareList, setShareList] =
     useState<boolean>(false);
   return (
     <header className="bg-white shadow-sm top-0 z-10 relative">
       <div className="flex items-center justify-between p-4">
         <button
-          onClick={() => setActiveListId("")}
+          onClick={() => updateActiveList("")}
           className="p-2 -ml-2 rtl:-mr-2 text-gray-600 hover:bg-gray-100 rounded-full"
         >
           <ArrowLeftIcon />

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   ShoppingList,
   Notification,
@@ -29,13 +28,8 @@ import {
 } from "firebase/firestore";
 import { FirebaseProductCacheService } from "../services/firebaseProductCacheService";
 
-type ShopSmartContextType = { 
-  
+type ShopSmartContextType = {
   notification: Notification | null;
-  
-  setLists: React.Dispatch<
-    React.SetStateAction<ShoppingList[]>
-  >;
 
   setNotification: React.Dispatch<
     React.SetStateAction<Notification | null>
@@ -45,12 +39,6 @@ type ShopSmartContextType = {
     listId: string,
     memberUid: string
   ) => Promise<void>;
-  addListMemberByEmail: (
-    email: string
-  ) => Promise<{
-    subject: string;
-    body: string;
-  } | null>;
   updateCustomGroupOrder: (customeGroupOrder: {
     [key in GroupId]?: number;
   }) => Promise<void>;
@@ -114,23 +102,23 @@ export function ShopSmartProvider({
     );
   };
 
-  const updateCustomGroupOrder =
-    async (customerGroupOrder: {
-      [key in GroupId]?: number
-      
+  const updateCustomGroupOrder = async (
+    customerGroupOrder: {
+      [key in GroupId]?: number;
+    },
+    activeListId?: string | null
+  ) => {
+    if (!activeListId) return;
 
-    }, activeListId?: string | null) => {
-      if (!activeListId) return;
-
-      const listRef = doc(
-        db,
-        "shoppingLists",
-        activeListId
-      );
-      await updateDoc(listRef, {
-        customerGroupOrder,
-      });
-    };
+    const listRef = doc(
+      db,
+      "shoppingLists",
+      activeListId
+    );
+    await updateDoc(listRef, {
+      customerGroupOrder,
+    });
+  };
 
   const removeListMember = async (
     listId: string,
@@ -144,90 +132,6 @@ export function ShopSmartProvider({
     await updateDoc(listRef, {
       members: arrayRemove(memberUid),
     });
-  };
-
-  
-
-  
-
-  const addListMemberByEmail = async (
-    email: string
-  ): Promise<{
-    subject: string;
-    body: string;
-  } | null> => {
-    if (!activeListId || !activeList) {
-      throw new Error("No active list selected.");
-    }
-    const normalizedEmail = email
-      .toLowerCase()
-      .trim();
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      activeListId
-    );
-
-    // Check if a user with this email already exists
-    const userQuery = query(
-      collection(db, "users"),
-      where("email", "==", normalizedEmail)
-    );
-    const userSnapshot = await getDocs(userQuery);
-
-    if (!userSnapshot.empty) {
-      // --- CASE 1: User Exists ---
-      const memberUid = userSnapshot.docs[0].id;
-
-      // Check if they are already a full member
-      if (
-        activeList.members.includes(memberUid)
-      ) {
-        throw new Error(
-          "This user is already a member of the list."
-        );
-      }
-
-      // User exists but is not a member. Add them and clean up any pending invite.
-      await updateDoc(listRef, {
-        members: arrayUnion(memberUid),
-        pendingInvites: arrayRemove(
-          normalizedEmail
-        ), // <-- This is the "remove and add" logic you remember
-      });
-      return null;
-    } else {
-      // --- CASE 2: User Does NOT Exist ---
-
-      // Check if they already have a pending invite
-      if (
-        activeList.pendingInvites?.includes(
-          normalizedEmail
-        )
-      ) {
-        throw new Error(
-          "This user already has a pending invitation."
-        );
-      }
-
-      // Add to pendingInvites on Firebase
-      await updateDoc(listRef, {
-        pendingInvites: arrayUnion(
-          normalizedEmail
-        ),
-      });
-
-      // Generate the email content for manual sending
-      const appUrl =
-        process.env.REACT_APP_BASE_URL ||
-        "https://your-app-domain.web.app";
-      const joinLink = `${appUrl}/join?listId=${activeListId}`;
-
-      const subject = `Invitation to join "${activeList.name}" on Shop Smart`;
-      const body = joinLink; // The body is now just the URL
-
-      return { subject, body };
-    }
   };
 
   const [notification, setNotification] =
@@ -455,7 +359,6 @@ export function ShopSmartProvider({
         createNewList,
         removeListMember,
         deleteAllDoneItems,
-        addListMemberByEmail,
         updateCustomGroupOrder,
         updateItemCategory,
         toggleItem,
