@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { categorizeItem } from "@/services/geminiService";
-import { ProductCacheItemsService } from '../../../services/ProductCacheItemService'
+import { FirebaseProductCacheService } from '../../../services/firebaseProductCacheService'
 import { ListItem } from "@/types";
 import { TRANSLATIONS } from "@/configuration/constants";
 import { UserContext } from "@/context/UserContext";
@@ -22,12 +22,12 @@ export function useSingleListViewFooter() {
   const notificationTimerRef = useRef<number | null>(null);
 
   // Initialize cache on first load
-  useEffect(() => {
-    ProductCacheItemsService.loadFromStorage();
-    if (ProductCacheItemsService.getAllProductNames().length === 0) {
-      ProductCacheItemsService.initializeDefaults();
-    }
-  }, []);
+  // useEffect(() => {
+    
+  //   if (FirebaseProductCacheService.getAllProductNames().length === 0) {
+  //     FirebaseProductCacheService.initializeDefaults();
+  //   }
+  // }, []);
 
   const triggerSimulatedNotification = (items: string[]) => {
     const activeList = lists.find((l) => l.id === activeListId);

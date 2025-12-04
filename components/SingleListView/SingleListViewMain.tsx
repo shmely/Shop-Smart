@@ -7,8 +7,6 @@ import {
   ChevronUpIcon,
 } from "@/configuration/icons";
 import DeleteSweepOutlinedIcon from "@mui/icons-material/DeleteSweepOutlined";
-import { DEFAULT_GROUPS } from "@/configuration/constants";
-import EditCategoryModal from "./modal/EditCategoryModal";
 import SingleListViewHeader from "./SingleListViewHeader";
 import SettingsModal from "./modal/SettingsModal";
 import { useContext } from "react";
@@ -20,8 +18,6 @@ export default function SingleListViewMain() {
     groupedItems,
     collapsedDoneItems,
     setCollapsedDoneItems,
-    editingItem,
-    setEditingItem,
     isSettingsModalOpen,
     sortedGroups,
     setSortedGroups,
@@ -35,7 +31,6 @@ export default function SingleListViewMain() {
     deleteItem,
     updateItemQuantity,
     toggleItem,
-    updateItemCategory,
   } = useContext(ShopSmartContext);
 
   const { activeListId } =
@@ -87,12 +82,6 @@ export default function SingleListViewMain() {
                     (item) => !item.isChecked
                   )}
                   listId={activeListId}
-                  toggleItem={toggleItem}
-                  updateItemQuantity={
-                    updateItemQuantity
-                  }
-                  deleteItem={deleteItem}
-                  setEditingItem={setEditingItem}
                 />
               </div>
             ))
@@ -175,14 +164,6 @@ export default function SingleListViewMain() {
                       items={items.filter(
                         (item) => item.isChecked
                       )}
-                      toggleItem={toggleItem}
-                      updateItemQuantity={
-                        updateItemQuantity
-                      }
-                      deleteItem={deleteItem}
-                      setEditingItem={
-                        setEditingItem
-                      }
                     />
                   </div>
                 ))}
@@ -196,15 +177,6 @@ export default function SingleListViewMain() {
           onClose={handleCloseSettings} // <-- Use the cancel handler
           onReorder={setSortedGroups}
           onSave={handleSaveOrder}
-        />
-      )}
-      {editingItem && (
-        <EditCategoryModal
-          listId={activeListId}
-          item={editingItem}
-          groups={DEFAULT_GROUPS}
-          onClose={() => setEditingItem(null)}
-          onSave={updateItemCategory}
         />
       )}
     </>

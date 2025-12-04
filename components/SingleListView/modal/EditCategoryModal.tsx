@@ -6,6 +6,7 @@ import {
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { TRANSLATIONS } from "@/configuration/constants";
 import { useContext } from "react";
+import { UserContext } from "@/context/UserContext";
 
 interface Props {
   listId: string;
@@ -26,13 +27,12 @@ export default function EditCategoryModal({
   onClose,
   onSave,
 }: Props) {
-  const { lang } = useContext(ShopSmartContext);
-  const t = TRANSLATIONS[lang];
+  const { t } = useContext(UserContext);
 
   const handleSave = (newGroupId: GroupId) => {
     onSave(listId, item, newGroupId);
     onClose();
-  }
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">

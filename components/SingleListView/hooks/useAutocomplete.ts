@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ProductCacheItemsService } from '../../../services/ProductCacheItemService';
+import { FirebaseProductCacheService } from '../../../services/firebaseProductCacheService';
 
 export function useAutocomplete(input: string) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -12,7 +12,7 @@ export function useAutocomplete(input: string) {
 
   useEffect(() => {
     if (input.length >= 2) {
-      const newSuggestions = ProductCacheItemsService.getSuggestions(input);
+      const newSuggestions = FirebaseProductCacheService.getSuggestions(input);
       setSuggestions(newSuggestions);
       setShowSuggestions(newSuggestions.length > 0);
     } else {

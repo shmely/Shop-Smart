@@ -27,6 +27,11 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { FirebaseProductCacheService } from "../services/firebaseProductCacheService";
+import {
+  getDocumentSnapshot,
+  getListRef,
+  updateListItems,
+} from "@/data-layer/firebase-layer";
 
 type ShopSmartContextType = {
   notification: Notification | null;
@@ -275,52 +280,43 @@ export function ShopSmartProvider({
     newGroupId: GroupId
   ) => {
     // --- Task 1: Update the item's category within the specific list ---
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    const listSnap = await getDoc(listRef);
+    const listRef = getListRef(listId);
+    const listSnap = await getDocumentSnapshot(listRef);
+
     if (listSnap.exists()) {
-      const listData =
-        listSnap.data() as ShoppingList;
-      const newItems = listData.items.map(
-        (item) =>
-          item.id === itemToUpdate.id
-            ? { ...item, groupId: newGroupId }
-            : item
+      const listData = listSnap.data() as ShoppingList;
+      const newItems = listData.items.map((item) =>
+        item.id === itemToUpdate.id
+          ? { ...item, groupId: newGroupId }
+          : item
       );
-      await updateDoc(listRef, {
-        items: newItems,
-      });
+      await updateListItems(listRef, newItems);
     }
 
     // --- Task 2: Update the global product cache ---
     try {
-      // Find the item in the cache by its name
-      const cachedItem =
-        FirebaseProductCacheService.findInCache(
-          itemToUpdate.name
-        );
+      // Use the correct method: searchSimilar()
+      const cachedItem = FirebaseProductCacheService.searchSimilar(
+        itemToUpdate.name
+      );
 
       if (cachedItem) {
-        // If it exists, update its category
-        await FirebaseProductCacheService.updateProductCategory(
-          cachedItem.id,
-          newGroupId
-        );
+        // If it exists and the group is different, update its category
+        if (cachedItem.groupId !== newGroupId) {
+          await FirebaseProductCacheService.updateProductCategory(
+            cachedItem.id,
+            newGroupId
+          );
+        }
       } else {
-        // If it's a new item not in the cache, add it
-        await FirebaseProductCacheService.addProductToCache(
+        // If it's a new item not in the cache, add it using the correct method: addProduct()
+        await FirebaseProductCacheService.addProduct(
           itemToUpdate.name,
           newGroupId
         );
       }
     } catch (error) {
-      console.error(
-        "Failed to update product cache:",
-        error
-      );
+      console.error("Failed to update product cache:", error);
     }
   };
 

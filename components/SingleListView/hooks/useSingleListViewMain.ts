@@ -10,7 +10,7 @@ export function useSingleListViewMain() {
   const { updateCustomGroupOrder } = useContext(ShopSmartContext);
   const t = TRANSLATIONS[lang];
 
-  const [editingItem, setEditingItem] = useState<ListItem | null>(null);
+
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [collapsedDoneItems, setCollapsedDoneItems] = useState(true);
 
@@ -77,8 +77,6 @@ export function useSingleListViewMain() {
     groupedItems,
     collapsedDoneItems,
     setCollapsedDoneItems,
-    editingItem,
-    setEditingItem,
     isSettingsModalOpen,
     sortedGroups,
     setSortedGroups, // The modal needs this for dragging

@@ -1,107 +1,124 @@
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  onSnapshot,
-  doc,
-  updateDoc,
-  Unsubscribe,
-} from "firebase/firestore";
-import { db } from "../firebase"; // Your firebase config file
+import { Unsubscribe } from "firebase/firestore";
+import { addProductToCache, subscribeToProductCache, updateProductCacheCategory } from "../data-layer/firebase-layer";
 import { GroupId, ProductCacheItem } from "../types";
 
-const COLLECTION_NAME = "productCache";
 
-// This will hold the cache in memory for instant access
-let localCache: ProductCacheItem[] = [];
-let unsubscribe: Unsubscribe | null = null;
 
-// --- Public Methods ---
 
-/**
- * Starts listening for real-time updates from Firebase and keeps the local cache in sync.
- * Call this once when your main app component mounts.
- */
-const subscribeToCache = (): Unsubscribe => {
-  if (unsubscribe) {
-    unsubscribe(); // Prevent multiple listeners
-  }
+class ProductCacheService {
+  private cache = new Map<string, ProductCacheItem>();
+  private unsubscribe: Unsubscribe | null = null;
 
-  const q = query(collection(db, COLLECTION_NAME));
-  unsubscribe = onSnapshot(q, (snapshot) => {
-    const newCache: ProductCacheItem[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      newCache.push({
-        id: doc.id,
-        name: data.name,
-        groupId: data.groupId,
-        addedAt: data.addedAt,
-      } as ProductCacheItem);
+  
+  /**
+   * Initializes the service by subscribing to real-time updates from Firestore.
+   * This should be called once when the application starts.
+   */
+  initialize(): void {
+    if (this.unsubscribe) {
+      console.log("ProductCacheService already initialized.");
+      return;
+    }
+    console.log("Initializing ProductCacheService...");
+    this.unsubscribe = subscribeToProductCache((products) => {
+      // Rebuild the Map whenever the cache updates in Firebase
+      this.cache = new Map(products.map(p => [p.id, p]));
+      console.log(`Product cache synced. Contains ${this.cache.size} items.`);
     });
-    localCache = newCache;
-    console.log(`Product cache synced. Contains ${localCache.length} items.`);
-  });
-
-  return unsubscribe;
-};
-
-/**
- * Searches the in-memory cache for an item.
- * @param itemName The name of the item to search for.
- * @returns The cached item or null if not found.
- */
-const findInCache = (itemName: string): ProductCacheItem | null => {
-  const normalizedItemName = itemName.trim().toLowerCase();
-  // A simple search for now, can be improved with fuzzy matching later
-  const found = localCache.find(
-    (item) => item.name.toLowerCase() === normalizedItemName
-  );
-  return found || null;
-};
-
-/**
- * Adds a new product to the Firebase cache.
- * The local cache will update automatically via the real-time listener.
- * @param itemName The name of the new item.
- * @param groupId The category ID from Gemini.
- */
-const addProductToCache = async (
-  itemName: string,
-  groupId: GroupId
-): Promise<void> => {
-  const normalizedItemName = itemName.trim().toLowerCase();
-  // Prevent adding duplicates
-  if (findInCache(normalizedItemName)) {
-    console.log(`"${itemName}" already in cache.`);
-    return;
   }
-  await addDoc(collection(db, COLLECTION_NAME), {
-    name: normalizedItemName,
-    groupId: groupId,
-  });
-};
 
-/**
- * Updates the category of an existing product in the Firebase cache.
- * @param productId The unique ID of the product document in Firebase.
- * @param newGroupId The new category ID.
- */
-const updateProductCategory = async (
-  productId: string,
-  newGroupId: GroupId
-): Promise<void> => {
-  const docRef = doc(db, COLLECTION_NAME, productId);
-  await updateDoc(docRef, {
-    groupId: newGroupId,
-  });
-};
+  /**
+   * Disconnects the real-time listener. Call this when the app is closing.
+   */
+  cleanup(): void {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
 
-export const FirebaseProductCacheService = {
-  subscribeToCache,
-  findInCache,
-  addProductToCache,
-  updateProductCategory,
-};
+  /**
+   * Adds a new product to the Firebase cache.
+   * The local cache will update automatically via the real-time listener.
+   * @param name The name of the product.
+   * @param groupId The category ID for the product.
+   */
+  async addProduct(name: string, groupId: GroupId): Promise<void> {
+    const normalizedName = this.normalizeName(name);
+    const trimmedName = name.trim();
+
+    // Optimistically update local cache for instant UI feedback
+    this.cache.set(normalizedName, {
+      id: normalizedName,
+      name: trimmedName,
+      groupId,
+      addedAt: Date.now()
+    });
+
+    try {
+      await addProductToCache(normalizedName, trimmedName, groupId);
+    } catch (error) {
+      console.error("Failed to add product to Firebase cache:", error);
+      // Note: The real-time listener will eventually correct any optimistic update failure.
+    }
+  }
+
+  /**
+   * Searches for a product by name, trying an exact match first, then a partial match.
+   * @param searchText The text to search for.
+   * @returns A matching ProductCacheItem or null.
+   */
+  searchSimilar(searchText: string): ProductCacheItem | null {
+    const normalizedSearch = this.normalizeName(searchText);
+
+    // First, try exact match (very fast)
+    if (this.cache.has(normalizedSearch)) {
+      return this.cache.get(normalizedSearch)!;
+    }
+
+    // Then, try partial matches
+    for (const [key, product] of this.cache.entries()) {
+      if (key.includes(normalizedSearch) || normalizedSearch.includes(key)) {
+        return product;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Gets suggestions for autocomplete based on partial input.
+   * @param input The partial text from the user.
+   * @param limit The maximum number of suggestions to return.
+   * @returns An array of product names.
+   */
+  getSuggestions(input: string, limit = 5): string[] {
+    const normalizedInput = this.normalizeName(input);
+    if (normalizedInput.length < 2) return [];
+
+    const suggestions: string[] = [];
+    for (const product of this.cache.values()) {
+      if (this.normalizeName(product.name).includes(normalizedInput)) {
+        suggestions.push(product.name);
+        if (suggestions.length >= limit) {
+          break; // Stop once we have enough suggestions
+        }
+      }
+    }
+    return suggestions.sort((a, b) => a.length - b.length); // Prefer shorter matches
+  }
+
+  async updateProductCategory(productId: string, newGroupId: GroupId): Promise<void> {
+    try {
+      await updateProductCacheCategory(productId, newGroupId);
+    } catch (error) {
+      console.error(`Failed to update category for product ${productId}:`, error);
+    }
+  }
+
+  private normalizeName(name: string): string {
+    return name.toLowerCase().trim().replace(/\s+/g, ' ');
+  }
+}
+
+// Export a singleton instance of the service
+export const FirebaseProductCacheService = new ProductCacheService();

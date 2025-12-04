@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GroupId } from "../types";
-import { ProductCacheItemsService } from "./ProductCacheItemService";
+import { FirebaseProductCacheService } from "./firebaseProductCacheService";
 
 // Initialize Gemini
 const genAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -8,7 +8,7 @@ const genAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const categorizeItem = async (itemName: string, language: 'he' | 'en'): Promise<GroupId> => {
   try {
     // First, check the local cache
-    const cachedItem = ProductCacheItemsService.searchSimilar(itemName);
+    const cachedItem = FirebaseProductCacheService.searchSimilar(itemName);
     if (cachedItem) {
       console.log(`Found cached category for "${itemName}": ${cachedItem.groupId}`);
       return cachedItem.groupId;
@@ -64,7 +64,7 @@ export const categorizeItem = async (itemName: string, language: 'he' | 'en'): P
     const groupId = json.groupId as GroupId || GroupId.OTHER;
 
     // Cache the result for future use
-    ProductCacheItemsService.addProduct(itemName, groupId);
+    FirebaseProductCacheService.addProduct(itemName, groupId);
 
     return groupId;
 

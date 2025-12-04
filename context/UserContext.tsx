@@ -11,21 +11,29 @@ import {
   useMemo,
 } from "react";
 
-import { auth, db } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
+
+import { TRANSLATIONS } from "@/configuration/constants";
 
 import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
   updateDoc,
   arrayUnion,
   arrayRemove,
   setDoc,
   getDocs,
 } from "firebase/firestore";
+import {
+  getListRef,
+  getListsCollectionRef,
+  getUserData,
+  listenToAuthChanges,
+  listenToUserListsChanges,
+  queryUserByEmail,
+  queryUserMemberLists,
+  removeEmailFromPendingInvites,
+  updateUserData,
+} from "@/data-layer/firebase-layer";
+import { FirebaseProductCacheService } from "@/services/firebaseProductCacheService";
 
 const STORAGE_KEYS = {
   LISTS: "shop-smart-lists",
@@ -51,6 +59,7 @@ type UserContextType = {
   activeListId?: string | null;
   updateActiveList: (id: string | null) => void;
   activeList: ShoppingList | null;
+  t: any;
 };
 
 export const UserContext = createContext<
@@ -75,6 +84,11 @@ export const UserProvider = ({
   const [lists, setLists] = useState<
     ShoppingList[]
   >([]);
+
+  const t = useMemo(
+    () => TRANSLATIONS[lang],
+    [lang]
+  );
   const [activeListId, setactiveListId] =
     useState<string | null>(
       localStorage.getItem(
@@ -91,86 +105,6 @@ export const UserProvider = ({
       id
     );
   };
-  useEffect(() => {
-    // This listener runs once on load, and again whenever the user logs in or out.
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      async (firebaseUser) => {
-        setIsAuthLoading(true);
-        if (firebaseUser) {
-          // User is signed in.
-          const userData: User = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email
-              ? firebaseUser.email.toLowerCase()
-              : null,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-          };
-          setUser(userData);
-          const userRef = doc(
-            db,
-            "users",
-            firebaseUser.uid
-          );
-          await setDoc(
-            userRef,
-            {
-              email: firebaseUser.email
-                ? firebaseUser.email.toLowerCase()
-                : null,
-              displayName:
-                firebaseUser.displayName,
-            },
-            { merge: true }
-          );
-
-          // --- HANDLE PENDING INVITATION ---
-          const pendingListId =
-            sessionStorage.getItem(
-              "pendingInvitation"
-            );
-          const userEmail =
-            firebaseUser.email?.toLowerCase();
-
-          if (pendingListId && userEmail) {
-            const listRef = doc(
-              db,
-              "shoppingLists",
-              pendingListId
-            );
-
-            // Add the new user's UID to the members array
-            // AND remove their email from pendingInvites in one atomic operation
-            await updateDoc(listRef, {
-              members: arrayUnion(
-                firebaseUser.uid
-              ),
-              pendingInvites:
-                arrayRemove(userEmail),
-            });
-
-            // Clear the stored invitation
-            sessionStorage.removeItem(
-              "pendingInvitation"
-            );
-
-            // Set this as the active list for a great UX!
-            setactiveListId(pendingListId);
-          }
-        } else {
-          // User is signed out.
-          setUser(null);
-          setLists([]); // Clear lists on logout
-        }
-        // 3. Once we have a definitive answer, set loading to false.
-        setIsAuthLoading(false);
-      }
-    );
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
 
   const activeList = useMemo(() => {
     if (!activeListId) {
@@ -183,38 +117,95 @@ export const UserProvider = ({
     );
   }, [lists, activeListId]);
 
+  const onUserListChange = (
+    userLists: ShoppingList[]
+  ) => {
+    setLists(userLists);
+    console.log("userLists:", userLists);
+    setIsAuthLoading(false);
+  };
+
+  const handleAuthChange = async (
+    firebaseUser: User | null
+  ) => {
+    setIsAuthLoading(true);
+    if (firebaseUser) {
+      firebaseUser.email
+        ? firebaseUser.email.toLowerCase()
+        : null;
+
+      setUser(firebaseUser);
+      const userRef = await getUserData(
+        firebaseUser.uid
+      );
+      // Pass your custom userData object to updateUserData
+      await updateUserData(userRef, firebaseUser);
+
+      // --- HANDLE PENDING INVITATION ---
+      const pendingListId =
+        sessionStorage.getItem(
+          "pendingInvitation"
+        );
+      const userEmail =
+        firebaseUser.email?.toLowerCase();
+
+      if (pendingListId && userEmail) {
+        const listRef = getListRef(pendingListId);
+
+        await removeEmailFromPendingInvites(
+          listRef,
+          userEmail,
+          firebaseUser.uid
+        );
+
+        sessionStorage.removeItem(
+          "pendingInvitation"
+        );
+        updateActiveList(pendingListId);
+      }
+    } else {
+      // User is signed out.
+      setUser(null);
+      setLists([]); // Clear lists on logout
+    }
+    setIsAuthLoading(false);
+  };
+
+  useEffect(() => {
+    // This listener runs once on load, and again whenever the user logs in or out.
+    const unsubscribe = listenToAuthChanges(
+      auth,
+      handleAuthChange
+    );
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+  // Start listening to the product cache when the app loads
+  FirebaseProductCacheService.initialize();
+
+  // Clean up the listener when the app closes or component unmounts
+  return () => {
+    FirebaseProductCacheService.cleanup();
+  };
+}, []);
+
   useEffect(() => {
     if (!user?.uid) return; // Don't query if there's no user
 
     setIsAuthLoading(true);
-    const listsRef = collection(
-      db,
-      "shoppingLists"
-    );
-    // This query is the core of your security model:
+    const listsRef = getListsCollectionRef();
+
     // It only fetches lists where the current user's UID is in the 'members' array.
-    const q = query(
-      listsRef,
-      where("members", "array-contains", user.uid)
+    const userMemberListsQueryResults =
+      queryUserMemberLists(user.uid, listsRef);
+
+    const unsubscribe = listenToUserListsChanges(
+      userMemberListsQueryResults,
+      onUserListChange
     );
 
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const userLists: ShoppingList[] = [];
-        querySnapshot.forEach((doc) => {
-          userLists.push({
-            id: doc.id,
-            ...doc.data(),
-          } as ShoppingList);
-        });
-        setLists(userLists);
-        console.log("userLists:", userLists);
-        setIsAuthLoading(false);
-      }
-    );
-
-    return () => unsubscribe(); // Cleanup listener on unmount or user change
+    return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
@@ -243,16 +234,12 @@ export const UserProvider = ({
     const normalizedEmail = email
       .toLowerCase()
       .trim();
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      activeListId
-    );
+
+    const listRef = getListRef(activeListId);
 
     // Check if a user with this email already exists
-    const userQuery = query(
-      collection(db, "users"),
-      where("email", "==", normalizedEmail)
+    const userQuery = queryUserByEmail(
+      normalizedEmail
     );
     const userSnapshot = await getDocs(userQuery);
 
@@ -331,6 +318,7 @@ export const UserProvider = ({
         activeList,
         activeListId,
         updateActiveList,
+        t,
       }}
     >
       {children}
