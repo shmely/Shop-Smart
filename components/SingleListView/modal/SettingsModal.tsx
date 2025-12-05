@@ -1,8 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useContext } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -11,18 +7,12 @@ import {
   TouchSensor, // 1. Import the TouchSensor
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { Group } from "@/types";
-import { SortableCategoryItem } from "../SortableCategoryItem";
-import { TRANSLATIONS } from "@/configuration/constants";
-import { ShopSmartContext } from "@/context/ShopSmartContext";
-import { UserContext } from "@/context/UserContext";
+} from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Group } from '@/types';
+import { SortableCategoryItem } from '../SortableCategoryItem';
+import { TRANSLATIONS } from '@/configuration/constants';
+import { UserContext } from '@/context/UserContext';
 
 interface Props {
   groups: Group[];
@@ -31,20 +21,12 @@ interface Props {
   onReorder: (reorderedGroups: Group[]) => void;
 }
 
-export default function SettingsModal({
-  groups,
-  onClose,
-  onReorder,
-  onSave,
-}: Props) {
- 
-
+export default function SettingsModal({ groups, onClose, onReorder, onSave }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
     useSensor(KeyboardSensor, {
-      coordinateGetter:
-        sortableKeyboardCoordinates,
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
   const { lang } = useContext(UserContext);
@@ -71,47 +53,25 @@ export default function SettingsModal({
       <div className="bg-gray-50 rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh]">
         {/* 2. Reduced header padding from p-6 to p-4 */}
         <div className="p-4 border-b">
-          <h3 className="text-xl font-bold text-gray-800">
-            {t.sort_categories}
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">
-            {t.drag_and_drop_to_reorder}
-          </p>
+          <h3 className="text-xl font-bold text-gray-800">{t.sort_categories}</h3>
+          <p className="text-sm text-gray-500 mt-1">{t.drag_and_drop_to_reorder}</p>
         </div>
         {/* 3. The flex-1 and overflow-y-auto will now work correctly within the constrained height */}
         <div className="p-4 space-y-2 overflow-y-auto flex-1">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={groups}
-              strategy={
-                verticalListSortingStrategy
-              }
-            >
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={groups} strategy={verticalListSortingStrategy}>
               {groups.map((group) => (
-                <SortableCategoryItem
-                  key={group.id}
-                  group={group}
-                />
+                <SortableCategoryItem key={group.id} group={group} />
               ))}
             </SortableContext>
           </DndContext>
         </div>
         {/* 4. Reduced footer padding for a denser look */}
         <div className="p-3 bg-gray-100 rounded-b-2xl flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-200"
-          >
+          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-200">
             {t.cancel}
           </button>
-          <button
-            onClick={() => handleSave()}
-            className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
-          >
+          <button onClick={() => handleSave()} className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700">
             {t.save_sorting}
           </button>
         </div>

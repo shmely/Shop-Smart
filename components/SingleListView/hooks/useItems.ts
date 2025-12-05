@@ -1,33 +1,18 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 import { categorizeItem } from "@/services/geminiService";
-import { FirebaseProductCacheService } from '../../../services/firebaseProductCacheService'
 import { ListItem } from "@/types";
-import { TRANSLATIONS } from "@/configuration/constants";
 import { UserContext } from "@/context/UserContext";
 
-export function useSingleListViewFooter() {
-  const {
-    lang,
-    activeListId,
-    activeList,
-    lists,
-    user,
-  } = useContext(UserContext);
-  const { setNotification, addItemToList } = useContext(ShopSmartContext);
-  const t = TRANSLATIONS[lang];
+export function useItems() {
+  const { t, lang, user } = useContext(UserContext);
+  const { setNotification, addItemToList, lists, activeListId, activeList } = useContext(ShopSmartContext);
   const [newItemText, setNewItemText] = useState("");
   const [isCategorizing, setIsCategorizing] = useState(false);
   const pendingItemsRef = useRef<string[]>([]);
   const notificationTimerRef = useRef<number | null>(null);
 
-  // Initialize cache on first load
-  // useEffect(() => {
-    
-  //   if (FirebaseProductCacheService.getAllProductNames().length === 0) {
-  //     FirebaseProductCacheService.initializeDefaults();
-  //   }
-  // }, []);
+
 
   const triggerSimulatedNotification = (items: string[]) => {
     const activeList = lists.find((l) => l.id === activeListId);
@@ -74,21 +59,16 @@ export function useSingleListViewFooter() {
       quantity: 1,
     };
 
-
     addItemToList(activeList.id, newItem);
-
     setIsCategorizing(false);
-
     pendingItemsRef.current.push(currentText);
-
     if (notificationTimerRef.current) {
       window.clearTimeout(notificationTimerRef.current);
+      notificationTimerRef.current = window.setTimeout(() => {
+        triggerSimulatedNotification([...pendingItemsRef.current]);
+        pendingItemsRef.current = [];
+      }, 1000);
     }
-
-    notificationTimerRef.current = window.setTimeout(() => {
-      triggerSimulatedNotification([...pendingItemsRef.current]);
-      pendingItemsRef.current = [];
-    }, 1000);
   };
 
   return {
@@ -99,4 +79,6 @@ export function useSingleListViewFooter() {
     handleAddItem,
   };
 }
+
+
 

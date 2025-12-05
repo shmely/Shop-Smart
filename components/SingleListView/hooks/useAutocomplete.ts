@@ -1,14 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { FirebaseProductCacheService } from '../../../services/firebaseProductCacheService';
 
 export function useAutocomplete(input: string) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const debouncedInput = useMemo(() => {
-    const timer = setTimeout(() => input, 300);
-    return () => clearTimeout(timer);
-  }, [input]);
 
   useEffect(() => {
     if (input.length >= 2) {

@@ -1,4 +1,4 @@
-import { it } from 'node:test';
+
 import { Group, GroupId, Language } from '../types';
 
 export const DEFAULT_GROUPS: Group[] = [
@@ -7,13 +7,22 @@ export const DEFAULT_GROUPS: Group[] = [
   { id: GroupId.BAKERY, order: 3, icon: '🥖', translationKey: 'bakery' },
   { id: GroupId.FROZEN, order: 4, icon: '🧊', translationKey: 'frozen' },
   { id: GroupId.DRY_GOODS, order: 5, icon: '🍝', translationKey: 'dry_goods' },
-  { id: GroupId.CLEANING, order: 6, icon: '🧼', translationKey: 'cleaning' },
+  { id: GroupId.CLEANING, order: 6, icon: '🧹', translationKey: 'cleaning' },
   { id: GroupId.BUTCHER, order: 7, icon: '🥩', translationKey: 'butcher' },
   { id: GroupId.FISHS, order: 8, icon: '🐟', translationKey: 'fishes' },
   { id: GroupId.DRINKS, order: 9, icon: '🥛', translationKey: 'drinks' },
   { id: GroupId.ALCOHOL, order: 10, icon: '🍷', translationKey: 'alcohol' },
+  { id: GroupId.TOILETRIES, order: 1, icon: '🧼', translationKey: 'toiletries' },
   { id: GroupId.OTHER, order: 99, icon: '📦', translationKey: 'other' }
 ];
+
+export const STORAGE_KEYS = {
+  LISTS: "shop-smart-lists",
+  USER: "shop-smart-user",
+  ACTIVE_LIST_ID: "shop-smart-active-list-id",
+  LANGUAGE: "shop-smart-language",
+  PENDING_INVITATION: "pendingInvitation"
+};
 
 export const TRANSLATIONS = {
   [Language.HE]: {
@@ -23,7 +32,7 @@ export const TRANSLATIONS = {
     bakery: 'מאפים',
     frozen: 'קפואים',
     dry_goods: 'מוצרים יבשים',
-    cleaning: 'ניקיון וטיפוח',
+    cleaning: 'ניקיון הבית',
     other: 'כללי',
     grocery_list: 'רשימת קניות',
     camping_list: 'ציוד קמפינג',
@@ -65,6 +74,7 @@ export const TRANSLATIONS = {
     sort_categories: 'מיין קטגוריות',
     drag_and_drop_to_reorder: 'גרור ושחרר כדי למיין מחדש את הסדר בסופר',
     save_sorting: 'שמור מיון',
+    toiletries: 'טואלטיקה',
 
   },
   [Language.EN]: {
@@ -108,12 +118,13 @@ export const TRANSLATIONS = {
     items: 'Items',
     item: 'Item',
     one: 'One',
-    changeCategory: 'Change Category',  
+    changeCategory: 'Change Category',
     fishes: 'Fishes',
     alcohol: 'Alcohol',
     drinks: 'Drinks',
     sort_categories: 'Sort Categories',
     drag_and_drop_to_reorder: 'Drag and drop to reorder your supermarket walk',
     save_sorting: 'Save Sorting',
+    toiletries: 'Toiletries',
   }
 };

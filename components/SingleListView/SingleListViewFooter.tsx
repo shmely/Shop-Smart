@@ -1,46 +1,31 @@
-import { useState } from "react";
-import { useSingleListViewFooter } from "./hooks/useSingleListViewFooter";
-import { useAutocomplete } from "./hooks/useAutocomplete";
-import { PlusIcon } from "@/configuration/icons";
+import { useState } from 'react';
+import { useItems } from './hooks/useItems';
+import { useAutocomplete } from './hooks/useAutocomplete';
+import { PlusIcon } from '@/configuration/icons';
 
 export default function SingleListViewFooter() {
-  const {
-    t,
-    newItemText,
-    setNewItemText,
-    isCategorizing,
-    handleAddItem,
-  } = useSingleListViewFooter();
-
-  const {
-    suggestions,
-    showSuggestions,
-    hideSuggestions,
-    showSuggestionsAgain,
-  } = useAutocomplete(newItemText);
-
+  const { t, newItemText, setNewItemText, isCategorizing, handleAddItem } = useItems();
+  const { suggestions, showSuggestions, hideSuggestions, showSuggestionsAgain } = useAutocomplete(newItemText);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showSuggestions) {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         handleAddItem();
       }
       return;
     }
 
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
+        setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev));
         break;
-      case "ArrowUp":
+      case 'ArrowUp':
         e.preventDefault();
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
         if (selectedIndex >= 0) {
           handleAddItem(suggestions[selectedIndex]);
@@ -50,7 +35,7 @@ export default function SingleListViewFooter() {
         hideSuggestions();
         setSelectedIndex(-1);
         break;
-      case "Escape":
+      case 'Escape':
         hideSuggestions();
         setSelectedIndex(-1);
         break;
@@ -86,9 +71,7 @@ export default function SingleListViewFooter() {
                 key={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
                 className={`px-4 py-3 cursor-pointer transition-colors ${
-                  index === selectedIndex
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "hover:bg-gray-50"
+                  index === selectedIndex ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50'
                 }`}
               >
                 {suggestion}
@@ -101,23 +84,13 @@ export default function SingleListViewFooter() {
           onClick={() => handleAddItem()}
           disabled={!newItemText.trim() || isCategorizing}
           className={`absolute right-2 top-2 p-2 rounded-full transition-colors ${
-            newItemText.trim()
-              ? "bg-emerald-600 text-white hover:bg-emerald-700"
-              : "bg-gray-300 text-gray-500"
+            newItemText.trim() ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-gray-300 text-gray-500'
           } rtl:right-auto rtl:left-2`}
         >
-          {isCategorizing ? (
-            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <PlusIcon />
-          )}
+          {isCategorizing ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <PlusIcon />}
         </button>
       </div>
-      {isCategorizing && (
-        <div className="text-center text-xs text-emerald-600 mt-2 font-medium animate-pulse">
-          ✨ {t.smart_sort}
-        </div>
-      )}
+      {isCategorizing && <div className="text-center text-xs text-emerald-600 mt-2 font-medium animate-pulse">✨ {t.smart_sort}</div>}
     </div>
   );
 }

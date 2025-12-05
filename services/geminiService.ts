@@ -17,7 +17,7 @@ export const categorizeItem = async (itemName: string, language: 'he' | 'en'): P
     // If not found in cache, use AI
     console.log(`Using AI to categorize "${itemName}"`);
     const modelId = 'gemini-2.5-flash';
-    
+
     const prompt = `
       You are a grocery assistant. 
       Categorize the item "${itemName}" (Language: ${language}) into exactly one of the following Group IDs:
@@ -62,9 +62,6 @@ export const categorizeItem = async (itemName: string, language: 'he' | 'en'): P
 
     const json = JSON.parse(text);
     const groupId = json.groupId as GroupId || GroupId.OTHER;
-
-    // Cache the result for future use
-    FirebaseProductCacheService.addProduct(itemName, groupId);
 
     return groupId;
 

@@ -1,284 +1,137 @@
-import {
-  ShoppingList,
-  Notification,
-  User,
-  ListItem,
-  GroupId,
-} from "@/types";
-
-import {
-  createContext,
-  useState,
-  ReactNode,
-} from "react";
-import { db } from "../firebase";
-
-import {
-  collection,
-  query,
-  where,
-  doc,
-  updateDoc,
-  addDoc,
-  arrayUnion,
-  arrayRemove,
-  getDocs,
-  getDoc,
-  deleteDoc,
-} from "firebase/firestore";
-import { FirebaseProductCacheService } from "../services/firebaseProductCacheService";
+import { ShoppingList, Notification, ListItem, GroupId, User } from '@/types';
+import { createContext, useState, ReactNode, useMemo, useEffect } from 'react';
+import { FirebaseProductCacheService } from '../services/firebaseProductCacheService';
 import {
   getDocumentSnapshot,
   getListRef,
   updateListItems,
-} from "@/data-layer/firebase-layer";
+  createNewList as createNewListInFirebase,
+  removeListMember as removeListMemberFromFirebase,
+  deleteList as deleteListFromFirebase,
+  updateListCustomGroupOrder,
+} from '@/data-layer/firebase-layer';
+import { STORAGE_KEYS } from '@/configuration/constants';
 
 type ShopSmartContextType = {
   notification: Notification | null;
 
-  setNotification: React.Dispatch<
-    React.SetStateAction<Notification | null>
-  >;
-  createNewList: (name: string) => Promise<void>;
-  removeListMember: (
-    listId: string,
-    memberUid: string
-  ) => Promise<void>;
+  lists: ShoppingList[];
+  setLists: React.Dispatch<React.SetStateAction<ShoppingList[]>>;
+  setNotification: React.Dispatch<React.SetStateAction<Notification | null>>;
+  removeListMember: (listId: string, memberUid: string) => Promise<void>;
+  createNewList: (name: string, activeUser: User) => Promise<void>;
+  updateItemQuantity: (listId: string, itemToUpdate: ListItem, newQuantity: number) => Promise<void>;
+  toggleItem: (listId: string, itemToUpdate: ListItem) => Promise<void>;
+  deleteAllDoneItems: (listId: string) => Promise<void>;
+  addItemToList: (listId: string, newItem: ListItem) => Promise<void>;
+  deleteItem: (listId: string, itemId: string) => Promise<void>;
+  activeListId?: string | null;
+  updateActiveList: (id: string | null) => void;
+  activeList: ShoppingList | null;
+  deleteList: (listId: string) => Promise<void>;
   updateCustomGroupOrder: (customeGroupOrder: {
     [key in GroupId]?: number;
   }) => Promise<void>;
-
-  deleteList: (listId: string) => Promise<void>;
   updateItemCategory: (
     listId: string,
     itemToUpdate: ListItem, // <-- Changed from itemId
     newGroupId: GroupId
   ) => Promise<void>;
-  updateItemQuantity: (
-    listId: string,
-    itemToUpdate: ListItem,
-    newQuantity: number
-  ) => Promise<void>;
-
-  toggleItem: (
-    listId: string,
-    itemToUpdate: ListItem
-  ) => Promise<void>;
-  deleteAllDoneItems: (
-    listId: string
-  ) => Promise<void>;
-  addItemToList: (
-    listId: string,
-    newItem: ListItem
-  ) => Promise<void>;
-  deleteItem: (
-    listId: string,
-    itemId: string
-  ) => Promise<void>;
 };
 
-export const ShopSmartContext = createContext<
-  ShopSmartContextType | undefined
->(undefined);
-
+export const ShopSmartContext = createContext<ShopSmartContextType | undefined>(undefined);
 interface ShopSmartProviderProps {
   children: ReactNode;
 }
 
-export function ShopSmartProvider({
-  children,
-}: ShopSmartProviderProps) {
-  const [user, setUser] = useState<User | null>(
-    null
-  );
+export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
+  const [notification, setNotification] = useState<Notification | null>(null);
+  const [lists, setLists] = useState<ShoppingList[]>([]);
+  const [activeListId, setActiveListId] = useState<string | null>(localStorage.getItem(STORAGE_KEYS.ACTIVE_LIST_ID));
+  useEffect(() => {
+    FirebaseProductCacheService.setActiveList(activeListId);
+  }, [activeListId]);
 
-  const createNewList = async (name: string) => {
-    if (!user)
-      throw new Error("User not authenticated");
-    const newList = {
-      name,
-      ownerId: user.uid,
-      members: [user.uid], // Owner is always the first member
-      items: [],
-    };
-    await addDoc(
-      collection(db, "shoppingLists"),
-      newList
-    );
+  const createNewList = async (name: string, activeUser: User) => {
+    if (!activeUser) throw new Error('User not authenticated');
+    await createNewListInFirebase(name, activeUser);
   };
 
-  const updateCustomGroupOrder = async (
-    customerGroupOrder: {
-      [key in GroupId]?: number;
-    },
-    activeListId?: string | null
-  ) => {
+  const updateActiveList = (id: string | null) => {
+    setActiveListId(id);
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_LIST_ID, id);
+  };
+
+  const activeList = useMemo(() => {
+    if (!activeListId) {
+      return null;
+    }
+    return lists.find((list) => list.id === activeListId) || null;
+  }, [lists, activeListId]);
+
+  const updateCustomGroupOrder = async (customerGroupOrder: { [key in GroupId]?: number }) => {
     if (!activeListId) return;
-
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      activeListId
-    );
-    await updateDoc(listRef, {
-      customerGroupOrder,
-    });
+    await updateListCustomGroupOrder(activeListId, customerGroupOrder);
   };
 
-  const removeListMember = async (
-    listId: string,
-    memberUid: string
-  ) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    await updateDoc(listRef, {
-      members: arrayRemove(memberUid),
-    });
+  const removeListMember = async (listId: string, memberUid: string) => {
+    await removeListMemberFromFirebase(listId, memberUid);
   };
 
-  const [notification, setNotification] =
-    useState<Notification | null>(null);
-
-  const deleteItem = async (
-    listId: string,
-    itemId: string
-  ) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    try {
-      // 1. Get the most up-to-date version of the list directly from Firebase
-      const listSnap = await getDoc(listRef);
-      if (!listSnap.exists()) {
-        throw new Error("List not found!");
-      }
-
-      const listData =
-        listSnap.data() as ShoppingList;
-
-      // 2. Filter the items array to keep only the ones that are NOT checked
-      const remainingItems =
-        listData.items.filter(
-          (item) => item.id !== itemId
-        );
-
-      // 3. Update the document in Firebase with the new, filtered array
-      await updateDoc(listRef, {
-        items: remainingItems,
-      });
-    } catch (error) {
-      console.error(
-        "Error deleting done items: ",
-        error
-      );
-    }
-  };
-  const deleteList = async (listId: string) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    if (!listRef) return;
-    await deleteDoc(listRef);
-  };
-
-  const addItemToList = async (
-    listId: string,
-    newItem: ListItem
-  ) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    try {
-      // Atomically add the new item to the 'items' array in Firestore.
-      // arrayUnion is efficient and prevents duplicates if the exact same object is added.
-      await updateDoc(listRef, {
-        items: arrayUnion(newItem),
-      });
-    } catch (error) {
-      console.error(
-        "Error adding item to list: ",
-        error
-      );
-    }
-  };
-
-  const deleteAllDoneItems = async (
-    listId: string
-  ) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    try {
-      // 1. Get the most up-to-date version of the list directly from Firebase
-      const listSnap = await getDoc(listRef);
-      if (!listSnap.exists()) {
-        throw new Error("List not found!");
-      }
-
-      const listData =
-        listSnap.data() as ShoppingList;
-
-      // 2. Filter the items array to keep only the ones that are NOT checked
-      const remainingItems =
-        listData.items.filter(
-          (item) => !item.isChecked
-        );
-
-      // 3. Update the document in Firebase with the new, filtered array
-      await updateDoc(listRef, {
-        items: remainingItems,
-      });
-    } catch (error) {
-      console.error(
-        "Error deleting done items: ",
-        error
-      );
-    }
-  };
-  const toggleItem = async (
-    listId: string,
-    itemToUpdate: ListItem
-  ) => {
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    const listSnap = await getDoc(listRef);
+  const deleteItem = async (listId: string, itemId: string) => {
+    const listRef = getListRef(listId);
+    const listSnap = await getDocumentSnapshot(listRef);
     if (listSnap.exists()) {
-      const listData =
-        listSnap.data() as ShoppingList;
-      const newItems = listData.items.map(
-        (item) =>
-          item.id === itemToUpdate.id
-            ? {
-                ...item,
-                isChecked: !item.isChecked,
-              }
-            : item
-      );
-      await updateDoc(listRef, {
-        items: newItems,
-      });
+      const remainingItems = listSnap.data().items.filter((item: ListItem) => item.id !== itemId);
+      await updateListItems(listRef, remainingItems);
     }
   };
 
-  const updateItemCategory = async (
-    listId: string,
-    itemToUpdate: ListItem,
-    newGroupId: GroupId
-  ) => {
+  const deleteList = async (listId: string) => {
+    await deleteListFromFirebase(listId);
+  };
+
+  const addItemToList = async (listId: string, item: ListItem) => {
+    const listRef = getListRef(listId);
+    const listSnap = await getDocumentSnapshot(listRef);
+
+    if (listSnap.exists()) {
+      // --- Task 1: Add the item to the list's 'items' array ---
+      const currentItems = listSnap.data().items || [];
+      await updateListItems(listRef, [...currentItems, item]);
+
+      // --- Task 2: Add the product to this list's productCache (This is now the main place) ---
+      try {
+        // This call saves the product's name and category to the cache for future use.
+        await FirebaseProductCacheService.addProduct(item.name, item.groupId);
+        console.log(`Product "${item.name}" added to cache for list ${listId}.`);
+      } catch (error) {
+        console.error('Failed to update product cache:', error);
+      }
+    }
+  };
+
+  const deleteAllDoneItems = async (listId: string) => {
+    const listRef = getListRef(listId);
+    const listSnap = await getDocumentSnapshot(listRef);
+    if (listSnap.exists()) {
+      const remainingItems = listSnap.data().items.filter((item: ListItem) => !item.isChecked);
+      await updateListItems(listRef, remainingItems);
+    }
+  };
+
+  const toggleItem = async (listId: string, itemToUpdate: ListItem) => {
+    const listRef = getListRef(listId);
+    const listSnap = await getDocumentSnapshot(listRef);
+    if (listSnap.exists()) {
+      const newItems = listSnap
+        .data()
+        .items.map((item: ListItem) => (item.id === itemToUpdate.id ? { ...item, isChecked: !item.isChecked } : item));
+      await updateListItems(listRef, newItems);
+    }
+  };
+
+  const updateItemCategory = async (listId: string, itemToUpdate: ListItem, newGroupId: GroupId) => {
     // --- Task 1: Update the item's category within the specific list ---
     const listRef = getListRef(listId);
     const listSnap = await getDocumentSnapshot(listRef);
@@ -286,64 +139,29 @@ export function ShopSmartProvider({
     if (listSnap.exists()) {
       const listData = listSnap.data() as ShoppingList;
       const newItems = listData.items.map((item) =>
-        item.id === itemToUpdate.id
-          ? { ...item, groupId: newGroupId }
-          : item
+        item.id === itemToUpdate.id ? { ...item, groupId: newGroupId } : item
       );
       await updateListItems(listRef, newItems);
     }
-
-    // --- Task 2: Update the global product cache ---
+    //--- Task 2: Update the global product cache ---
     try {
-      // Use the correct method: searchSimilar()
-      const cachedItem = FirebaseProductCacheService.searchSimilar(
-        itemToUpdate.name
-      );
-
-      if (cachedItem) {
-        // If it exists and the group is different, update its category
-        if (cachedItem.groupId !== newGroupId) {
-          await FirebaseProductCacheService.updateProductCategory(
-            cachedItem.id,
-            newGroupId
-          );
-        }
-      } else {
-        // If it's a new item not in the cache, add it using the correct method: addProduct()
-        await FirebaseProductCacheService.addProduct(
-          itemToUpdate.name,
-          newGroupId
-        );
+      const cachedItem = FirebaseProductCacheService.searchSimilar(itemToUpdate.name);
+      if (cachedItem && cachedItem.groupId !== newGroupId) {
+        await FirebaseProductCacheService.updateProductCategory(cachedItem.id, newGroupId);
       }
     } catch (error) {
-      console.error("Failed to update product cache:", error);
+      console.error('Failed to update product cache:', error);
     }
   };
 
-  const updateItemQuantity = async (
-    listId: string,
-    itemToUpdate: ListItem,
-    newQuantity: number
-  ) => {
-    // --- Task 1: Update the item's quantity within the specific list ---
-    const listRef = doc(
-      db,
-      "shoppingLists",
-      listId
-    );
-    const listSnap = await getDoc(listRef);
+  const updateItemQuantity = async (listId: string, itemToUpdate: ListItem, newQuantity: number) => {
+    const listRef = getListRef(listId);
+    const listSnap = await getDocumentSnapshot(listRef);
     if (listSnap.exists()) {
-      const listData =
-        listSnap.data() as ShoppingList;
-      const newItems = listData.items.map(
-        (item) =>
-          item.id === itemToUpdate.id
-            ? { ...item, quantity: newQuantity }
-            : item
-      );
-      await updateDoc(listRef, {
-        items: newItems,
-      });
+      const newItems = listSnap
+        .data()
+        .items.map((item: ListItem) => (item.id === itemToUpdate.id ? { ...item, quantity: newQuantity } : item));
+      await updateListItems(listRef, newItems);
     }
   };
 
@@ -352,6 +170,11 @@ export function ShopSmartProvider({
       value={{
         notification,
         setNotification,
+        lists,
+        setLists,
+        activeListId,
+        updateActiveList,
+        activeList,
         createNewList,
         removeListMember,
         deleteAllDoneItems,

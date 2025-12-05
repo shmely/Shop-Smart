@@ -1,26 +1,16 @@
-import { useContext, useState } from "react";
-import { ShopSmartContext } from "../../../context/ShopSmartContext";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  TextField,
-  Typography,
-} from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { useContext, useState } from 'react';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { UserContext } from '@/context/UserContext';
 
 interface Props {
   setIsOpen: (isOpen: boolean) => void;
 }
 
 export default function ShareListModal({ setIsOpen }: Props) {
-  const { addListMemberByEmail } = useContext(ShopSmartContext);
-  const [email, setEmail] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const { addListMemberByEmail } = useContext(UserContext);
+  const [email, setEmail] = useState<string>('');
+  const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // State to hold the generated email content
@@ -37,7 +27,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
   const handleAddMember = async () => {
     if (!email.trim()) return;
     setIsLoading(true);
-    setError("");
+    setError('');
     try {
       const result = await addListMemberByEmail(email);
       if (result) {
@@ -71,14 +61,16 @@ export default function ShareListModal({ setIsOpen }: Props) {
               label="To"
               value={email}
               fullWidth
-              InputProps={{ readOnly: true,  endAdornment: (
+              InputProps={{
+                readOnly: true,
+                endAdornment: (
                   <IconButton onClick={() => handleCopyToClipboard(email)}>
                     <ContentCopyIcon />
                   </IconButton>
                 ),
               }}
               sx={{ mb: 2 }}
-            />             
+            />
             <TextField
               label="Subject"
               value={emailContent.subject}
@@ -125,12 +117,10 @@ export default function ShareListModal({ setIsOpen }: Props) {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setIsOpen(false)}>
-          {emailContent ? "Close" : "Cancel"}
-        </Button>
+        <Button onClick={() => setIsOpen(false)}>{emailContent ? 'Close' : 'Cancel'}</Button>
         {!emailContent && (
           <Button onClick={handleAddMember} disabled={isLoading}>
-            {isLoading ? "Adding..." : "Add Member"}
+            {isLoading ? 'Adding...' : 'Add Member'}
           </Button>
         )}
       </DialogActions>

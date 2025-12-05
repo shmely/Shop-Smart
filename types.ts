@@ -15,6 +15,7 @@ export enum GroupId {
   FISHS = "fishes",
   DRINKS = "drinks",
   ALCOHOL = "alcohol",
+  TOILETRIES = "toiletries"
 }
 
 export interface Group {

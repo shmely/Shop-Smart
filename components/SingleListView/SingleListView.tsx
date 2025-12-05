@@ -1,5 +1,5 @@
-import SingleListViewFooter from "./SingleListViewFooter";
-import SingleListViewMain from "./SingleListViewMain";
+import SingleListViewFooter from './SingleListViewFooter';
+import SingleListViewMain from './SingleListViewMain';
 
 export default function SingleListView() {
   return (
