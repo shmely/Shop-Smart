@@ -1,4 +1,4 @@
-import { Language } from '../types';
+import { Language } from '../model/types';
 import { useContext } from 'react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';

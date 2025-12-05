@@ -1,6 +1,6 @@
 import { useMemo, useState, useContext, useRef } from "react"; // useRef is new
 import { UserContext } from "@/context/UserContext";
-import { Group, GroupId } from "@/types";
+import { Group, GroupId } from "@/model/types";
 import { DEFAULT_GROUPS } from "@/configuration/constants";
 import { ShopSmartContext } from "@/context/ShopSmartContext";
 

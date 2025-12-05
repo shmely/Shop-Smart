@@ -1,4 +1,4 @@
-import { Language, ShoppingList, User } from '../types';
+import { Language, ShoppingList, User } from '../model/types';
 import { createContext, useState, useEffect, ReactNode, useMemo, useContext } from 'react';
 import { ShopSmartContext } from './ShopSmartContext';
 import { auth } from '../firebase';

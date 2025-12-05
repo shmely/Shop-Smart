@@ -1,4 +1,4 @@
-import { Language } from '@/types';
+import { Language } from '@/model/types';
 import { useContext } from 'react';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';

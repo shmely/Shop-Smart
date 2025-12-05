@@ -9,7 +9,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Group } from '@/types';
+import { Group } from '@/model/types';
 import { SortableCategoryItem } from '../SortableCategoryItem';
 import { TRANSLATIONS } from '@/configuration/constants';
 import { UserContext } from '@/context/UserContext';

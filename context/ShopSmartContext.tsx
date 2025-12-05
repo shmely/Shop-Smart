@@ -1,4 +1,4 @@
-import { ShoppingList, Notification, ListItem, GroupId, User } from '@/types';
+import { ShoppingList, Notification, ListItem, GroupId, User } from '@/model/types';
 import { createContext, useState, ReactNode, useMemo, useEffect } from 'react';
 import { FirebaseProductCacheService } from '../services/firebaseProductCacheService';
 import {

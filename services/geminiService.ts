@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { GroupId } from "../types";
+import { GroupId } from "../model/types";
 import { FirebaseProductCacheService } from "./firebaseProductCacheService";
 
 // Initialize Gemini

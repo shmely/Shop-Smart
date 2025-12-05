@@ -1,4 +1,4 @@
-import { ListItem } from '@/types';
+import { ListItem } from '@/model/types';
 import { ViewItem } from './ViewItem';
 
 interface Props {

@@ -1,5 +1,5 @@
 import { CheckIcon, EditIcon } from '@/configuration/icons';
-import { ListItem } from '@/types';
+import { ListItem } from '@/model/types';
 import { QuantityInput } from './QuantityInput';
 import { DEFAULT_GROUPS } from '@/configuration/constants';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';

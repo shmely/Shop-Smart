@@ -1,7 +1,7 @@
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import { FormControl } from '@mui/material';
-import { ListItem } from '@/types';
+import { ListItem } from '@/model/types';
 
 interface Props {
   updateItemQuantity: (listId: string, itemToUpdate: ListItem, newQuantity: number) => Promise<void>;

@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Group } from '@/types';
+import { Group } from '@/model/types';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { UserContext } from '@/context/UserContext';
 
