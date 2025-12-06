@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function ShareListModal({ setIsOpen }: Props) {
-  const { addListMemberByEmail } = useContext(UserContext);
+  const { addListMemberByEmail,t } = useContext(UserContext);
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -49,16 +49,16 @@ export default function ShareListModal({ setIsOpen }: Props) {
 
   return (
     <Dialog open={true} onClose={() => setIsOpen(false)} fullWidth>
-      <DialogTitle>Share List</DialogTitle>
+      <DialogTitle>{t.share_list}</DialogTitle>
       <DialogContent>
         {emailContent ? (
           // --- VIEW 2: Show generated content to copy ---
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle1" gutterBottom>
-              User not found. Please send them this invitation:
+              {t.user_not_found_share}
             </Typography>
             <TextField
-              label="To"
+              label={t.to}
               value={email}
               fullWidth
               InputProps={{
@@ -72,7 +72,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
               sx={{ mb: 2 }}
             />
             <TextField
-              label="Subject"
+              label={t.subject}
               value={emailContent.subject}
               fullWidth
               InputProps={{
@@ -86,7 +86,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
               sx={{ mb: 2 }}
             />
             <TextField
-              label="Body (Link)"
+              label={t.body}
               value={emailContent.body}
               fullWidth
               InputProps={{
@@ -105,7 +105,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
             autoFocus
             margin="dense"
             id="email"
-            label="Email Address"
+            label={t.email_address}
             type="email"
             fullWidth
             variant="standard"
@@ -117,10 +117,10 @@ export default function ShareListModal({ setIsOpen }: Props) {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setIsOpen(false)}>{emailContent ? 'Close' : 'Cancel'}</Button>
+        <Button onClick={() => setIsOpen(false)}>{emailContent ? t.close : t.cancel}</Button>
         {!emailContent && (
           <Button onClick={handleAddMember} disabled={isLoading}>
-            {isLoading ? 'Adding...' : 'Add Member'}
+            {isLoading ? t.adding : t.add_member}
           </Button>
         )}
       </DialogActions>

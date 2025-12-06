@@ -77,7 +77,12 @@ export const TRANSLATIONS = {
     toiletries: 'טואלטיקה',
     confirm_delete_done_items: 'האם אתה בטוח שברצונך להסיר לצמיתות את כל הפריטים שהושלמו מרשימה זו?',
     delete_done_items_title: 'מחק פריטים שהושלמו',
-    yes_delete: 'כן, מחק'
+    yes_delete: 'כן, מחק',
+    user_not_found_share: 'משתמש לא נמצא. אנא שלח להם את ההזמנה הזו:',
+    add_member: 'שתף ',
+    adding: 'מוסיף...',
+    to: 'אל',
+    email_address: 'כתובת אימייל',
   },
   [Language.EN]: {
     app_name: 'ShopSmart',
@@ -130,6 +135,11 @@ export const TRANSLATIONS = {
     toiletries: 'Toiletries',
     confirm_delete_done_items: 'Are you sure you want to permanently remove all completed items from this list?',
     delete_done_items_title: 'Delete Completed Items',
-    yes_delete: 'Yes, delete'
+    yes_delete: 'Yes, delete',
+    user_not_found_share: 'User not found. Please send them this invitation:',
+    add_member: 'Add Member',
+    adding: 'Adding...',
+    to: 'To',
+    email_address: 'Email Address',
   }
 };
