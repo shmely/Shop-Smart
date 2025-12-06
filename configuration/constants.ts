@@ -75,7 +75,9 @@ export const TRANSLATIONS = {
     drag_and_drop_to_reorder: 'גרור ושחרר כדי למיין מחדש את הסדר בסופר',
     save_sorting: 'שמור מיון',
     toiletries: 'טואלטיקה',
-
+    confirm_delete_done_items: 'האם אתה בטוח שברצונך להסיר לצמיתות את כל הפריטים שהושלמו מרשימה זו?',
+    delete_done_items_title: 'מחק פריטים שהושלמו',
+    yes_delete: 'כן, מחק'
   },
   [Language.EN]: {
     app_name: 'ShopSmart',
@@ -126,5 +128,8 @@ export const TRANSLATIONS = {
     drag_and_drop_to_reorder: 'Drag and drop to reorder your supermarket walk',
     save_sorting: 'Save Sorting',
     toiletries: 'Toiletries',
+    confirm_delete_done_items: 'Are you sure you want to permanently remove all completed items from this list?',
+    delete_done_items_title: 'Delete Completed Items',
+    yes_delete: 'Yes, delete'
   }
 };

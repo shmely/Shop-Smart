@@ -9,12 +9,13 @@ import SettingsModal from './modal/settings-modal/SettingsModal';
 import { useContext, useState } from 'react';
 import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 import { useSettingsModal } from './modal/settings-modal/useSettingsModal';
+import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
 
 export default function SingleListViewMain() {
   const { t, groupedItems, collapsedDoneItems, setCollapsedDoneItems, doneGroups, doneItemsCount } =
     useSingleListViewMain();
   const { deleteAllDoneItems, activeListId } = useContext(ShopSmartContext);
-
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const {
     isSettingsModalOpen,
     handleOpenSettings,
@@ -23,6 +24,13 @@ export default function SingleListViewMain() {
     handleSaveOrder,
     handleDragEnd,
   } = useSettingsModal();
+
+  const handleConfirmDelete = () => {
+    if (activeListId) {
+      deleteAllDoneItems(activeListId);
+    }
+    setIsDeleteConfirmOpen(false); // Close the modal after deleting
+  };
 
   return (
     <>
@@ -50,7 +58,7 @@ export default function SingleListViewMain() {
               <span className="text-gray-700 text-xl ">{t.done_items}</span>
               <div className="flex text-gray-500 justify-between align-center w-full ">
                 <button
-                  onClick={() => deleteAllDoneItems(activeListId)}
+                   onClick={() => setIsDeleteConfirmOpen(true)}
                   className="text-gray-600 hover:text-red-500 transition-colors"
                 >
                   <DeleteSweepOutlinedIcon fontSize="large" />
@@ -101,8 +109,20 @@ export default function SingleListViewMain() {
         <SingleListViewFooter />
       </main>
       {isSettingsModalOpen && (
-        <SettingsModal onClose={handleCloseSettings} onSave={handleSaveOrder} onDragEnd={handleDragEnd} editingGroups={editingGroups} />
+        <SettingsModal
+          onClose={handleCloseSettings}
+          onSave={handleSaveOrder}
+          onDragEnd={handleDragEnd}
+          editingGroups={editingGroups}
+        />
       )}
+      <ConfirmDeleteModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={t.delete_done_items_title}
+        message={t.confirm_delete_done_items}
+      />
     </>
   );
 }
