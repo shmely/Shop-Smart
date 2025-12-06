@@ -59,14 +59,14 @@ export function useItems() {
 
     addItemToList(activeList.id, newItem);
     setIsCategorizing(false);
-    pendingItemsRef.current.push(currentText);
     if (notificationTimerRef.current) {
       window.clearTimeout(notificationTimerRef.current);
-      notificationTimerRef.current = window.setTimeout(() => {
-        triggerSimulatedNotification([...pendingItemsRef.current]);
-        pendingItemsRef.current = [];
-      }, 1000);
     }
+
+    notificationTimerRef.current = window.setTimeout(() => {
+      triggerSimulatedNotification([...pendingItemsRef.current]);
+      pendingItemsRef.current = [];
+    }, 1000);
   };
 
   return {
