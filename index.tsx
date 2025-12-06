@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { ShopSmartProvider } from './context/ShopSmartContext';
+import { ShopSmartProvider } from './context/ShopSmartContext/ShopSmartContext';
 import Header from './components/Header/Header';
 import { UserProvider } from './context/UserContext';
 

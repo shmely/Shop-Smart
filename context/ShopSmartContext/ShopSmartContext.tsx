@@ -1,6 +1,6 @@
-import { ShoppingList, Notification, ListItem, GroupId, User } from '@/model/types';
+import { ShoppingList, Notification, ListItem, GroupId, User, Group } from '@/model/types';
 import { createContext, useState, ReactNode, useMemo, useEffect } from 'react';
-import { FirebaseProductCacheService } from '../services/firebaseProductCacheService';
+import { FirebaseProductCacheService } from '../../services/firebaseProductCacheService';
 import {
   getDocumentSnapshot,
   getListRef,
@@ -10,34 +10,8 @@ import {
   deleteList as deleteListFromFirebase,
   updateListCustomGroupOrder as updateListCustomGroupOrderInFirebase,
 } from '@/data-layer/firebase-layer';
-import { STORAGE_KEYS } from '@/configuration/constants';
-
-type ShopSmartContextType = {
-  notification: Notification | null;
-
-  lists: ShoppingList[];
-  setLists: React.Dispatch<React.SetStateAction<ShoppingList[]>>;
-  setNotification: React.Dispatch<React.SetStateAction<Notification | null>>;
-  removeListMember: (listId: string, memberUid: string) => Promise<void>;
-  createNewList: (name: string, activeUser: User) => Promise<void>;
-  updateItemQuantity: (listId: string, itemToUpdate: ListItem, newQuantity: number) => Promise<void>;
-  toggleItem: (listId: string, itemToUpdate: ListItem) => Promise<void>;
-  deleteAllDoneItems: (listId: string) => Promise<void>;
-  addItemToList: (listId: string, newItem: ListItem) => Promise<void>;
-  deleteItem: (listId: string, itemId: string) => Promise<void>;
-  activeListId?: string | null;
-  updateActiveList: (id: string | null) => void;
-  activeList: ShoppingList | null;
-  deleteList: (listId: string) => Promise<void>;
-  updateCustomGroupOrder: (customeGroupOrder: {
-    [key in GroupId]?: number;
-  }) => Promise<void>;
-  updateItemCategory: (
-    listId: string,
-    itemToUpdate: ListItem, // <-- Changed from itemId
-    newGroupId: GroupId
-  ) => Promise<void>;
-};
+import { DEFAULT_GROUPS, STORAGE_KEYS } from '@/configuration/constants';
+import { ShopSmartContextType } from './ShopSmartContext-types';
 
 export const ShopSmartContext = createContext<ShopSmartContextType | undefined>(undefined);
 interface ShopSmartProviderProps {
@@ -48,9 +22,31 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
   const [notification, setNotification] = useState<Notification | null>(null);
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(localStorage.getItem(STORAGE_KEYS.ACTIVE_LIST_ID));
+
   useEffect(() => {
     FirebaseProductCacheService.setActiveList(activeListId);
   }, [activeListId]);
+
+  const activeList = useMemo(() => {
+    if (!activeListId) {
+      return null;
+    }
+    return lists.find((list) => list.id === activeListId) || null;
+  }, [lists, activeListId]);
+
+  const sortedGroups = useMemo(() => {
+    const customOrder = activeList?.customGroupOrder;
+
+    const groupsToSort: Group[] = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+    if (customOrder) {
+      groupsToSort.sort((a, b) => {
+        const orderA = customOrder[a.id] ?? 99;
+        const orderB = customOrder[b.id] ?? 99;
+        return orderA - orderB;
+      });
+    }
+    return groupsToSort;
+  }, [activeList?.customGroupOrder]);
 
   const createNewList = async (name: string, activeUser: User) => {
     if (!activeUser) throw new Error('User not authenticated');
@@ -62,16 +58,9 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     localStorage.setItem(STORAGE_KEYS.ACTIVE_LIST_ID, id);
   };
 
-  const activeList = useMemo(() => {
-    if (!activeListId) {
-      return null;
-    }
-    return lists.find((list) => list.id === activeListId) || null;
-  }, [lists, activeListId]);
-
   const updateCustomGroupOrder = async (newOrderMap: { [key in GroupId]?: number }) => {
     if (!activeListId) {
-      console.error("Cannot update order, no active list ID.");
+      console.error('Cannot update order, no active list ID.');
       return;
     }
 
@@ -88,15 +77,15 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     // --- Task 2: Try to save the change to Firebase ---
     try {
       await updateListCustomGroupOrderInFirebase(activeListId, newOrderMap);
-      console.log("Successfully saved custom group order to Firebase.");
+      console.log('Successfully saved custom group order to Firebase.');
     } catch (error) {
-      console.error("Failed to save custom group order to Firebase:", error);
+      console.error('Failed to save custom group order to Firebase:', error);
       // OPTIONAL: Here you could add logic to revert the optimistic UI update
       // and show a notification to the user that the save failed.
       setNotification({
         id: Date.now().toString(),
-        message: "Error: Could not save your sorting preference.",
-        listName: activeList ? activeList.name : "Shopping List",
+        message: 'Error: Could not save your sorting preference.',
+        listName: activeList ? activeList.name : 'Shopping List',
         timestamp: Date.now(),
       });
     }
@@ -203,6 +192,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
         activeListId,
         updateActiveList,
         activeList,
+        sortedGroups,        
         createNewList,
         removeListMember,
         deleteAllDoneItems,

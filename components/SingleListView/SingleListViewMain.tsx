@@ -5,29 +5,24 @@ import SingleListViewItems from './SingleListViewItems';
 import { ChevronDownIcon, ChevronUpIcon } from '@/configuration/icons';
 import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined';
 import SingleListViewHeader from './SingleListViewHeader';
-import SettingsModal from './modal/SettingsModal';
-import { useContext } from 'react';
-import { ShopSmartContext } from '@/context/ShopSmartContext';
+import SettingsModal from './modal/settings-modal/SettingsModal';
+import { useContext, useState } from 'react';
+import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
+import { useSettingsModal } from './modal/settings-modal/useSettingsModal';
 
 export default function SingleListViewMain() {
+  const { t, groupedItems, collapsedDoneItems, setCollapsedDoneItems, doneGroups, doneItemsCount } =
+    useSingleListViewMain();
+  const { deleteAllDoneItems, activeListId } = useContext(ShopSmartContext);
+
   const {
-    t,
-    groupedItems,
-    collapsedDoneItems,
-    setCollapsedDoneItems,
     isSettingsModalOpen,
-    sortedGroups,
     handleOpenSettings,
+    editingGroups,
     handleCloseSettings,
     handleSaveOrder,
-  } = useSingleListViewMain();
-
-  const { deleteAllDoneItems, activeListId } = useContext(ShopSmartContext);
-  const doneGroups = groupedItems.filter(({ items }) => items.some((item) => item.isChecked));
-  const doneItemsCount = doneGroups.reduce(
-    (acc, group) => acc + group.items.filter((item) => item.isChecked).length,
-    0
-  );
+    handleDragEnd,
+  } = useSettingsModal();
 
   return (
     <>
@@ -106,7 +101,7 @@ export default function SingleListViewMain() {
         <SingleListViewFooter />
       </main>
       {isSettingsModalOpen && (
-        <SettingsModal groups={sortedGroups} onClose={handleCloseSettings} onSave={handleSaveOrder} />
+        <SettingsModal onClose={handleCloseSettings} onSave={handleSaveOrder} onDragEnd={handleDragEnd} editingGroups={editingGroups} />
       )}
     </>
   );

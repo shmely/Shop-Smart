@@ -8,25 +8,20 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { Group } from '@/model/types';
-import { SortableCategoryItem } from '../SortableCategoryItem';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableCategoryItem } from '../../SortableCategoryItem';
 import { UserContext } from '@/context/UserContext';
+import { Group } from '@/model/types';
 
 interface Props {
-  groups: Group[];
+  editingGroups: Group[];
   onClose: () => void;
-  onSave: (reorderedGroups: Group[]) => void;
+  onSave: () => void;
+  onDragEnd: (event: any) => void;
 }
-
-export default function SettingsModal({ groups, onClose, onSave }: Props) {
-  const [internalGroups, setInternalGroups] = useState(groups);
+export default function SettingsModal({ onClose, onSave, onDragEnd, editingGroups }: Props) {
   const { t } = useContext(UserContext);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -34,19 +29,6 @@ export default function SettingsModal({ groups, onClose, onSave }: Props) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  function handleDragEnd(event: any) {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = internalGroups.findIndex((item) => item.id === active.id);
-      const newIndex = internalGroups.findIndex((item) => item.id === over.id);
-      setInternalGroups(arrayMove(internalGroups, oldIndex, newIndex));
-    }
-  }
-
-  const handleSave = () => {
-    onSave(internalGroups);
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
@@ -59,9 +41,9 @@ export default function SettingsModal({ groups, onClose, onSave }: Props) {
         </div>
         {/* 3. The flex-1 and overflow-y-auto will now work correctly within the constrained height */}
         <div className="p-4 space-y-2 overflow-y-auto flex-1">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={internalGroups} strategy={verticalListSortingStrategy}>
-              {internalGroups.map((group) => (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={editingGroups} strategy={verticalListSortingStrategy}>
+              {editingGroups.map((group) => (
                 <SortableCategoryItem key={group.id} group={group} />
               ))}
             </SortableContext>
@@ -70,13 +52,16 @@ export default function SettingsModal({ groups, onClose, onSave }: Props) {
         {/* 4. Reduced footer padding for a denser look */}
         <div className="p-3 bg-gray-100 rounded-b-2xl flex justify-end gap-3">
           <button
-            onClick={onClose}
+            onClick={() => onClose()}
             className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-200"
           >
             {t.cancel}
           </button>
           <button
-            onClick={() => handleSave()}
+            onClick={() => {
+              console.log('Save button clicked!');
+              onSave();
+            }}
             className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
           >
             {t.save_sorting}

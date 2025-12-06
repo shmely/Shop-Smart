@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { ShopSmartContext } from '@/context/ShopSmartContext';
+import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 
 interface Props {
   onDismiss: () => void;

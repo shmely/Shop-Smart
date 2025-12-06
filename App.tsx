@@ -1,7 +1,7 @@
 import { useEffect, useContext } from 'react';
 import { Language } from './model/types';
 import Login from './components/Login';
-import { ShopSmartContext } from './context/ShopSmartContext';
+import { ShopSmartContext } from './context/ShopSmartContext/ShopSmartContext';
 import ListOfLists from './components/ListOfLists';
 import {} from './configuration/icons';
 import SingleListView from './components/SingleListView/SingleListView';

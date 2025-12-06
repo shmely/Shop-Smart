@@ -4,7 +4,7 @@ import { QuantityInput } from './QuantityInput';
 import { DEFAULT_GROUPS } from '@/configuration/constants';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useContext, useState } from 'react';
-import { ShopSmartContext } from '../../context/ShopSmartContext';
+import { ShopSmartContext } from '../../context/ShopSmartContext/ShopSmartContext';
 import EditCategoryModal from './modal/EditCategoryModal';
 
 interface Props {

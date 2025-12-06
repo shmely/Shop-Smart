@@ -6,7 +6,7 @@ export const DEFAULT_GROUPS: Group[] = [
   { id: GroupId.DAIRY, order: 1, icon: '🧀', translationKey: 'dairy' },
   { id: GroupId.BAKERY, order: 2, icon: '🥖', translationKey: 'bakery' },
   { id: GroupId.FROZEN, order: 3, icon: '🧊', translationKey: 'frozen' },
-  { id: GroupId.DRY_GOODS, order: 4, icon: '🍝', translationKey: 'dry_goods' },
+  { id: GroupId.DRY_GOODS, order: 4, icon: '🥫', translationKey: 'dry_goods' },
   { id: GroupId.CLEANING, order: 5, icon: '🧹', translationKey: 'cleaning' },
   { id: GroupId.BUTCHER, order: 6, icon: '🥩', translationKey: 'butcher' },
   { id: GroupId.FISHS, order: 7, icon: '🐟', translationKey: 'fishes' },

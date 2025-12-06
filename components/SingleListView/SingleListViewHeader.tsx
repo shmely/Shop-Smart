@@ -2,7 +2,7 @@ import { ArrowLeftIcon, ShareIcon } from '@/configuration/icons';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useContext, useState } from 'react';
 import ShareListModal from './modal/ShareListModal';
-import { ShopSmartContext } from '@/context/ShopSmartContext';
+import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 
 interface Props {
   onOpenSettings: () => void;

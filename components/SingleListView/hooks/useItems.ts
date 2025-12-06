@@ -1,5 +1,5 @@
 import { useContext, useRef, useState } from "react";
-import { ShopSmartContext } from "@/context/ShopSmartContext";
+import { ShopSmartContext } from "@/context/ShopSmartContext/ShopSmartContext";
 import { categorizeItem } from "@/services/geminiService";
 import { ListItem } from "@/model/types";
 import { UserContext } from "@/context/UserContext";
@@ -11,8 +11,6 @@ export function useItems() {
   const [isCategorizing, setIsCategorizing] = useState(false);
   const pendingItemsRef = useRef<string[]>([]);
   const notificationTimerRef = useRef<number | null>(null);
-
-
 
   const triggerSimulatedNotification = (items: string[]) => {
     const activeList = lists.find((l) => l.id === activeListId);

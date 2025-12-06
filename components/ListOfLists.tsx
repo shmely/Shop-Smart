@@ -1,6 +1,6 @@
 import { TRANSLATIONS } from '@/configuration/constants';
 import { PlusIcon } from '@/configuration/icons';
-import { ShopSmartContext } from '@/context/ShopSmartContext';
+import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 import { UserContext } from '@/context/UserContext';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useContext, useState } from 'react';
