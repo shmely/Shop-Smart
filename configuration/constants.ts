@@ -83,6 +83,8 @@ export const TRANSLATIONS = {
     adding: 'מוסיף...',
     to: 'אל',
     email_address: 'כתובת אימייל',
+    subject: 'נושא',
+    body: 'גוף (קישור)',
   },
   [Language.EN]: {
     app_name: 'ShopSmart',
@@ -141,5 +143,7 @@ export const TRANSLATIONS = {
     adding: 'Adding...',
     to: 'To',
     email_address: 'Email Address',
+    subject: 'Subject',
+    body: 'Body (Link)',
   }
 };
