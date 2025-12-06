@@ -5,7 +5,6 @@ export function useAutocomplete(input: string) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-
   useEffect(() => {
     if (input.length >= 2) {
       const newSuggestions = FirebaseProductCacheService.getSuggestions(input);
