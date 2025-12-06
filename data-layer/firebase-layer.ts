@@ -149,10 +149,10 @@ export const updateListItems = async (listRef: DocumentReference<DocumentData, D
 
 export const updateListCustomGroupOrder = async (
   listId: string,
-  customerGroupOrder: { [key in GroupId]?: number }
+  customGroupOrder: { [key in GroupId]?: number }
 ) => {
   const listRef = getListRef(listId);
-  await updateDoc(listRef, { customerGroupOrder });
+  await updateDoc(listRef, { customGroupOrder });
 };
 
 

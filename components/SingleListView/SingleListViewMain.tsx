@@ -17,7 +17,6 @@ export default function SingleListViewMain() {
     setCollapsedDoneItems,
     isSettingsModalOpen,
     sortedGroups,
-    setSortedGroups,
     handleOpenSettings,
     handleCloseSettings,
     handleSaveOrder,
@@ -25,7 +24,10 @@ export default function SingleListViewMain() {
 
   const { deleteAllDoneItems, activeListId } = useContext(ShopSmartContext);
   const doneGroups = groupedItems.filter(({ items }) => items.some((item) => item.isChecked));
-  const doneItemsCount = doneGroups.reduce((acc, group) => acc + group.items.filter((item) => item.isChecked).length, 0);
+  const doneItemsCount = doneGroups.reduce(
+    (acc, group) => acc + group.items.filter((item) => item.isChecked).length,
+    0
+  );
 
   return (
     <>
@@ -52,19 +54,36 @@ export default function SingleListViewMain() {
             <div className="flex flex-col items-center border-t border-gray-400 my-6 px-4">
               <span className="text-gray-700 text-xl ">{t.done_items}</span>
               <div className="flex text-gray-500 justify-between align-center w-full ">
-                <button onClick={() => deleteAllDoneItems(activeListId)} className="text-gray-600 hover:text-red-500 transition-colors">
+                <button
+                  onClick={() => deleteAllDoneItems(activeListId)}
+                  className="text-gray-600 hover:text-red-500 transition-colors"
+                >
                   <DeleteSweepOutlinedIcon fontSize="large" />
                 </button>
 
-                <span className="font text-me mx-auto">{doneItemsCount === 1 ? `${t.item} ${t.one}` : doneItemsCount > 1 ? `${doneItemsCount} ${t.items}` : ''}</span>
+                <span className="font text-me mx-auto">
+                  {doneItemsCount === 1
+                    ? `${t.item} ${t.one}`
+                    : doneItemsCount > 1
+                    ? `${doneItemsCount} ${t.items}`
+                    : ''}
+                </span>
                 {doneItemsCount > 0 && (
                   <div className="flex">
                     {collapsedDoneItems ? (
-                      <button type="button" onClick={() => setCollapsedDoneItems(!collapsedDoneItems)} className="focus:outline-none">
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedDoneItems(!collapsedDoneItems)}
+                        className="focus:outline-none"
+                      >
                         <ChevronUpIcon />
                       </button>
                     ) : (
-                      <button type="button" onClick={() => setCollapsedDoneItems(!collapsedDoneItems)} className="focus:outline-none">
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedDoneItems(!collapsedDoneItems)}
+                        className="focus:outline-none"
+                      >
                         <ChevronDownIcon />
                       </button>
                     )}
@@ -87,12 +106,7 @@ export default function SingleListViewMain() {
         <SingleListViewFooter />
       </main>
       {isSettingsModalOpen && (
-        <SettingsModal
-          groups={sortedGroups}
-          onClose={handleCloseSettings} // <-- Use the cancel handler
-          onReorder={setSortedGroups}
-          onSave={handleSaveOrder}
-        />
+        <SettingsModal groups={sortedGroups} onClose={handleCloseSettings} onSave={handleSaveOrder} />
       )}
     </>
   );

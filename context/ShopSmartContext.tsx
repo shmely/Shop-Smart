@@ -8,7 +8,7 @@ import {
   createNewList as createNewListInFirebase,
   removeListMember as removeListMemberFromFirebase,
   deleteList as deleteListFromFirebase,
-  updateListCustomGroupOrder,
+  updateListCustomGroupOrder as updateListCustomGroupOrderInFirebase,
 } from '@/data-layer/firebase-layer';
 import { STORAGE_KEYS } from '@/configuration/constants';
 
@@ -69,9 +69,37 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     return lists.find((list) => list.id === activeListId) || null;
   }, [lists, activeListId]);
 
-  const updateCustomGroupOrder = async (customerGroupOrder: { [key in GroupId]?: number }) => {
-    if (!activeListId) return;
-    await updateListCustomGroupOrder(activeListId, customerGroupOrder);
+  const updateCustomGroupOrder = async (newOrderMap: { [key in GroupId]?: number }) => {
+    if (!activeListId) {
+      console.error("Cannot update order, no active list ID.");
+      return;
+    }
+
+    // --- Task 1: Optimistically update the local state ---
+    // Update the UI immediately for a snappy user experience.
+    setLists((currentLists) =>
+      currentLists.map((list) =>
+        list.id === activeListId
+          ? { ...list, customGroupOrder: newOrderMap } // Create a new list object with the new order
+          : list
+      )
+    );
+
+    // --- Task 2: Try to save the change to Firebase ---
+    try {
+      await updateListCustomGroupOrderInFirebase(activeListId, newOrderMap);
+      console.log("Successfully saved custom group order to Firebase.");
+    } catch (error) {
+      console.error("Failed to save custom group order to Firebase:", error);
+      // OPTIONAL: Here you could add logic to revert the optimistic UI update
+      // and show a notification to the user that the save failed.
+      setNotification({
+        id: Date.now().toString(),
+        message: "Error: Could not save your sorting preference.",
+        listName: activeList ? activeList.name : "Shopping List",
+        timestamp: Date.now(),
+      });
+    }
   };
 
   const removeListMember = async (listId: string, memberUid: string) => {

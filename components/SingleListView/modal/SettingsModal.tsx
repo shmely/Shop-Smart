@@ -1,27 +1,32 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import {
   DndContext,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
-  TouchSensor, // 1. Import the TouchSensor
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { Group } from '@/model/types';
 import { SortableCategoryItem } from '../SortableCategoryItem';
-import { TRANSLATIONS } from '@/configuration/constants';
 import { UserContext } from '@/context/UserContext';
 
 interface Props {
   groups: Group[];
   onClose: () => void;
   onSave: (reorderedGroups: Group[]) => void;
-  onReorder: (reorderedGroups: Group[]) => void;
 }
 
-export default function SettingsModal({ groups, onClose, onReorder, onSave }: Props) {
+export default function SettingsModal({ groups, onClose, onSave }: Props) {
+  const [internalGroups, setInternalGroups] = useState(groups);
+  const { t } = useContext(UserContext);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor),
@@ -29,22 +34,18 @@ export default function SettingsModal({ groups, onClose, onReorder, onSave }: Pr
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-  const { lang } = useContext(UserContext);
-  const t = TRANSLATIONS[lang];
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = groups.findIndex((item) => item.id === active.id);
-      const newIndex = groups.findIndex((item) => item.id === over.id);
-      // Call the new onReorder prop to update the parent's state immediately
-      onReorder(arrayMove(groups, oldIndex, newIndex));
+      const oldIndex = internalGroups.findIndex((item) => item.id === active.id);
+      const newIndex = internalGroups.findIndex((item) => item.id === over.id);
+      setInternalGroups(arrayMove(internalGroups, oldIndex, newIndex));
     }
   }
 
   const handleSave = () => {
-    onSave(groups);
-    onClose();
+    onSave(internalGroups);
   };
 
   return (
@@ -59,8 +60,8 @@ export default function SettingsModal({ groups, onClose, onReorder, onSave }: Pr
         {/* 3. The flex-1 and overflow-y-auto will now work correctly within the constrained height */}
         <div className="p-4 space-y-2 overflow-y-auto flex-1">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={groups} strategy={verticalListSortingStrategy}>
-              {groups.map((group) => (
+            <SortableContext items={internalGroups} strategy={verticalListSortingStrategy}>
+              {internalGroups.map((group) => (
                 <SortableCategoryItem key={group.id} group={group} />
               ))}
             </SortableContext>
@@ -68,10 +69,16 @@ export default function SettingsModal({ groups, onClose, onReorder, onSave }: Pr
         </div>
         {/* 4. Reduced footer padding for a denser look */}
         <div className="p-3 bg-gray-100 rounded-b-2xl flex justify-end gap-3">
-          <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-200">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-200"
+          >
             {t.cancel}
           </button>
-          <button onClick={() => handleSave()} className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700">
+          <button
+            onClick={() => handleSave()}
+            className="px-5 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
+          >
             {t.save_sorting}
           </button>
         </div>

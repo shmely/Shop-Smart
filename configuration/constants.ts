@@ -2,17 +2,17 @@
 import { Group, GroupId, Language } from '../model/types';
 
 export const DEFAULT_GROUPS: Group[] = [
-  { id: GroupId.FRUITS_VEG, order: 1, icon: '🍎', translationKey: 'fruits_veg' },
-  { id: GroupId.DAIRY, order: 2, icon: '🧀', translationKey: 'dairy' },
-  { id: GroupId.BAKERY, order: 3, icon: '🥖', translationKey: 'bakery' },
-  { id: GroupId.FROZEN, order: 4, icon: '🧊', translationKey: 'frozen' },
-  { id: GroupId.DRY_GOODS, order: 5, icon: '🍝', translationKey: 'dry_goods' },
-  { id: GroupId.CLEANING, order: 6, icon: '🧹', translationKey: 'cleaning' },
-  { id: GroupId.BUTCHER, order: 7, icon: '🥩', translationKey: 'butcher' },
-  { id: GroupId.FISHS, order: 8, icon: '🐟', translationKey: 'fishes' },
-  { id: GroupId.DRINKS, order: 9, icon: '🥛', translationKey: 'drinks' },
-  { id: GroupId.ALCOHOL, order: 10, icon: '🍷', translationKey: 'alcohol' },
-  { id: GroupId.TOILETRIES, order: 1, icon: '🧼', translationKey: 'toiletries' },
+  { id: GroupId.FRUITS_VEG, order: 0, icon: '🍎', translationKey: 'fruits_veg' },
+  { id: GroupId.DAIRY, order: 1, icon: '🧀', translationKey: 'dairy' },
+  { id: GroupId.BAKERY, order: 2, icon: '🥖', translationKey: 'bakery' },
+  { id: GroupId.FROZEN, order: 3, icon: '🧊', translationKey: 'frozen' },
+  { id: GroupId.DRY_GOODS, order: 4, icon: '🍝', translationKey: 'dry_goods' },
+  { id: GroupId.CLEANING, order: 5, icon: '🧹', translationKey: 'cleaning' },
+  { id: GroupId.BUTCHER, order: 6, icon: '🥩', translationKey: 'butcher' },
+  { id: GroupId.FISHS, order: 7, icon: '🐟', translationKey: 'fishes' },
+  { id: GroupId.DRINKS, order: 8, icon: '🥛', translationKey: 'drinks' },
+  { id: GroupId.ALCOHOL, order: 9, icon: '🍷', translationKey: 'alcohol' },
+  { id: GroupId.TOILETRIES, order: 10, icon: '🧼', translationKey: 'toiletries' },
   { id: GroupId.OTHER, order: 99, icon: '📦', translationKey: 'other' }
 ];
 
