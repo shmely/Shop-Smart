@@ -25,7 +25,7 @@ interface ShopSmartProviderProps {
 }
 
 export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
-  const { user } = useContext(UserContext);
+  const { user,t } = useContext(UserContext);
   const [notification, setNotification] = useState<Notification | null>(null);
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(localStorage.getItem(STORAGE_KEYS.ACTIVE_LIST_ID));
@@ -70,7 +70,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
           console.log(`New item '${firstNewItem.name}' detected. Triggering notification.`);
           setNotification({
             id: Date.now().toString(),
-            message: `'${firstNewItem.name}' was added to the list.`,
+            message: `'${user.displayName || 'a member'} ${t.notification_added_item}  ${firstNewItem.name}  {${activeList.name}}  `,
             listName: activeList.name,
             timestamp: Date.now(),
             type: NotificationType.INFO,

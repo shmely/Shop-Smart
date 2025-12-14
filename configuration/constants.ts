@@ -85,6 +85,7 @@ export const TRANSLATIONS = {
     email_address: 'כתובת אימייל',
     subject: 'נושא',
     body: 'גוף (קישור)',
+    notification_added_item: 'הוסיף פריט ל',
   },
   [Language.EN]: {
     app_name: 'ShopSmart',
@@ -145,5 +146,6 @@ export const TRANSLATIONS = {
     email_address: 'Email Address',
     subject: 'Subject',
     body: 'Body (Link)',
+    notification_added_item: 'added an item to the list',
   }
 };
