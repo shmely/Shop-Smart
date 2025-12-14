@@ -13,11 +13,11 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ShopSmartProvider>
-      <UserProvider>
+    <UserProvider>
+      <ShopSmartProvider>
         <Header />
         <App />
-      </UserProvider>
-    </ShopSmartProvider>
+      </ShopSmartProvider>
+    </UserProvider>
   </React.StrictMode>
 );

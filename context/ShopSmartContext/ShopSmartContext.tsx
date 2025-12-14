@@ -1,5 +1,5 @@
-import { ShoppingList, Notification, ListItem, GroupId, User, Group } from '@/model/types';
-import { createContext, useState, ReactNode, useMemo, useEffect } from 'react';
+import { ShoppingList, Notification, ListItem, GroupId, User, Group, NotificationType } from '@/model/types';
+import { createContext, useState, ReactNode, useMemo, useEffect, useContext, useRef } from 'react';
 import { FirebaseProductCacheService } from '../../services/firebaseProductCacheService';
 import {
   getDocumentSnapshot,
@@ -9,9 +9,15 @@ import {
   removeListMember as removeListMemberFromFirebase,
   deleteList as deleteListFromFirebase,
   updateListCustomGroupOrder as updateListCustomGroupOrderInFirebase,
+  removeEmailFromPendingInvites,
+  getListsCollectionRef,
+  queryUserMemberLists,
+  listenToUserListsChanges,
+  manageListMembershipByEmail,
 } from '@/data-layer/firebase-layer';
 import { DEFAULT_GROUPS, STORAGE_KEYS } from '@/configuration/constants';
 import { ShopSmartContextType } from './ShopSmartContext-types';
+import { UserContext } from '../UserContext';
 
 export const ShopSmartContext = createContext<ShopSmartContextType | undefined>(undefined);
 interface ShopSmartProviderProps {
@@ -19,13 +25,74 @@ interface ShopSmartProviderProps {
 }
 
 export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
+  const { user } = useContext(UserContext);
   const [notification, setNotification] = useState<Notification | null>(null);
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(localStorage.getItem(STORAGE_KEYS.ACTIVE_LIST_ID));
 
+  // --- Refs to hold the most current state for the listener ---
+  const listsRef = useRef(lists);
+  const activeListIdRef = useRef(activeListId);
+
+  // Keep the refs updated with the latest state on every render
+  useEffect(() => {
+    listsRef.current = lists;
+    activeListIdRef.current = activeListId;
+  });
+
+  // --- This is the corrected listener setup ---
+  useEffect(() => {
+    // If no user, clear lists and do nothing else.
+    if (!user) {
+      setLists([]);
+      return;
+    }
+
+    const listsCollection = getListsCollectionRef();
+    const userListsQuery = queryUserMemberLists(user.uid, listsCollection);
+
+    // The listener is set up once per user session.
+    const unsubscribe = listenToUserListsChanges(userListsQuery, (updatedLists) => {
+      // Get the "previous" lists from our ref.
+      const previousLists = listsRef.current;
+      // Get the CURRENT active list ID from our ref.
+      const currentActiveListId = activeListIdRef.current;
+
+      const activeList = updatedLists.find((list) => list.id === currentActiveListId);
+      const previousActiveList = previousLists.find((list) => list.id === currentActiveListId);
+
+      if (activeList && previousActiveList && activeList.items.length > previousActiveList.items.length) {
+        const previousItemIds = new Set(previousActiveList.items.map((item) => item.id));
+        const newItems = activeList.items.filter((item) => !previousItemIds.has(item.id));
+
+        if (newItems.length > 0) {
+          const firstNewItem = newItems[0];
+          console.log(`New item '${firstNewItem.name}' detected. Triggering notification.`);
+          setNotification({
+            id: Date.now().toString(),
+            message: `'${firstNewItem.name}' was added to the list.`,
+            listName: activeList.name,
+            timestamp: Date.now(),
+            type: NotificationType.INFO,
+          });
+        }
+      }
+      // After checking for notifications, update the state.
+      setLists(updatedLists);
+    });
+
+    // Cleanup the listener when the user logs out.
+    return () => unsubscribe();
+  }, [user?.uid]); // The listener's lifecycle is correctly tied ONLY to the user.
+
   useEffect(() => {
     FirebaseProductCacheService.setActiveList(activeListId);
   }, [activeListId]);
+
+  const onUserListChange = (userLists: ShoppingList[]) => {
+    setLists(userLists);
+    console.log('userLists:', userLists);
+  };
 
   const activeList = useMemo(() => {
     if (!activeListId) {
@@ -182,6 +249,34 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     }
   };
 
+  const addListMemberByEmail = async (
+    email: string
+  ): Promise<{
+    subject: string;
+    body: string;
+  } | null> => {
+    if (!activeListId || !activeList) {
+      throw new Error('No active list selected.');
+    }
+
+    // The data layer now handles all the complex database logic.
+    const invitationWasCreated = await manageListMembershipByEmail(activeListId, activeList, email);
+
+    if (invitationWasCreated) {
+      // If an invitation was created, generate the email content for the UI.
+      const appUrl = process.env.REACT_APP_BASE_URL || 'https://your-app-domain.web.app';
+      const joinLink = `${appUrl}/join?listId=${activeListId}`;
+
+      const subject = `Invitation to join "${activeList.name}" on Shop Smart`;
+      const body = joinLink;
+
+      return { subject, body };
+    }
+
+    // If the user was added directly, no email is needed.
+    return null;
+  };
+
   return (
     <ShopSmartContext.Provider
       value={{
@@ -192,7 +287,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
         activeListId,
         updateActiveList,
         activeList,
-        sortedGroups,        
+        sortedGroups,
         createNewList,
         removeListMember,
         deleteAllDoneItems,

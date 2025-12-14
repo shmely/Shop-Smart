@@ -22,13 +22,6 @@ export function useItems() {
     } else {
       message = `${t.notification_new_items} ${listName}`;
     }
-
-    setNotification({
-      id: Date.now().toString(),
-      message,
-      listName,
-      timestamp: Date.now(),
-    });
   };
 
   const handleAddItem = async (itemName?: string) => {

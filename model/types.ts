@@ -3,6 +3,12 @@ export enum Language {
   EN = 'en'
 }
 
+export enum NotificationType {
+  INFO = 'info',
+  WARNING = 'warning',
+  ERROR = 'error',
+}
+
 export enum GroupId {
   FRUITS_VEG = 'fruits_veg',
   DAIRY = 'dairy',
@@ -58,6 +64,7 @@ export interface Notification {
   message: string;
   listName: string;
   timestamp: number;
+  type?: NotificationType;
 }
 
 export interface ProductCacheItem {
