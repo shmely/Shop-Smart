@@ -31,14 +31,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const unsubscribe = listenToAuthChanges(auth, handleAuthChange);
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setIsAuthLoading(false);
-      return;
-    }
-    setIsAuthLoading(true);
-  }, [user]);
+  
 
   useEffect(() => {
     try {
@@ -48,21 +41,16 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, [lang]);
 
-  const handleAuthChange = async (firebaseUser: User | null) => {
-    setIsAuthLoading(true);
-    if (firebaseUser) {
-      firebaseUser.email ? firebaseUser.email.toLowerCase() : null;
-      setUser(firebaseUser);
-      const userRef = await getUserData(firebaseUser.uid);
-      // Pass your custom userData object to updateUserData
+  const handleAuthChange = async (firebaseUser: User | null) => {   
+    if (firebaseUser) {     
+      const userRef = await getUserData(firebaseUser.uid);      
       await updateUserData(userRef, firebaseUser);
+      setUser(firebaseUser);
     } else {
       setUser(null);
     }
     setIsAuthLoading(false);
   };
-
-  // --- THIS FUNCTION IS NOW MUCH SIMPLER ---
 
   return (
     <UserContext.Provider

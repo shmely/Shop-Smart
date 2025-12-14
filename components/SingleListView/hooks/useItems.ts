@@ -6,7 +6,7 @@ import { UserContext } from "@/context/UserContext";
 
 export function useItems() {
   const { t, lang, user } = useContext(UserContext);
-  const { setNotification, addItemToList, lists, activeListId, activeList } = useContext(ShopSmartContext);
+  const { addItemToList, lists, activeListId, activeList } = useContext(ShopSmartContext);
   const [newItemText, setNewItemText] = useState("");
   const [isCategorizing, setIsCategorizing] = useState(false);
   const pendingItemsRef = useRef<string[]>([]);
