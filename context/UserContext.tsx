@@ -4,6 +4,7 @@ import { ShopSmartContext } from './ShopSmartContext/ShopSmartContext';
 import { auth } from '../firebase';
 import { TRANSLATIONS, STORAGE_KEYS } from '@/configuration/constants';
 import { getUserData, listenToAuthChanges, updateUserData } from '@/data-layer/firebase-layer';
+import { requestPermissionAndGetToken, saveTokenToFirestore } from '@/data-layer/firebase-messaging-service';
 
 type UserContextType = {
   user: User | null;
@@ -46,6 +47,11 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       const userRef = await getUserData(firebaseUser.uid);      
       await updateUserData(userRef, firebaseUser);
       setUser(firebaseUser);
+
+      const fcmToken = await requestPermissionAndGetToken();
+      if (fcmToken) {
+        await saveTokenToFirestore(firebaseUser.uid, fcmToken);
+      }
     } else {
       setUser(null);
     }

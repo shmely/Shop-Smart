@@ -9,7 +9,6 @@ import {
   removeListMember as removeListMemberFromFirebase,
   deleteList as deleteListFromFirebase,
   updateListCustomGroupOrder as updateListCustomGroupOrderInFirebase,
-  removeEmailFromPendingInvites,
   getListsCollectionRef,
   queryUserMemberLists,
   listenToUserListsChanges,
@@ -18,7 +17,8 @@ import {
 import { DEFAULT_GROUPS, STORAGE_KEYS } from '@/configuration/constants';
 import { ShopSmartContextType } from './ShopSmartContext-types';
 import { UserContext } from '../UserContext';
-
+import { getMessaging, onMessage } from 'firebase/messaging';
+import { app } from '../../firebase';
 export const ShopSmartContext = createContext<ShopSmartContextType | undefined>(undefined);
 interface ShopSmartProviderProps {
   children: ReactNode;
@@ -40,6 +40,28 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     activeListIdRef.current = activeListId;
   });
 
+  useEffect(() => {
+    // This effect sets up the listener for foreground messages.
+    const messaging = getMessaging(app);
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("Foreground message received: ", payload);
+
+      // We have a notification payload. Let's display it using our in-app notification system.
+      if (payload.notification) {
+        setNotification({
+          id: payload.messageId || Date.now().toString(),
+          message: payload.notification.body || "You have a new message.",
+          listName: payload.notification.title, // Or parse from body if needed
+          timestamp: Date.now(),
+          type: NotificationType.INFO, // Or determine from payload data
+        });
+      }
+    });
+
+    // Cleanup the listener when the component unmounts.
+    return () => unsubscribe();
+  }, []);
+
   // --- This is the corrected listener setup ---
   useEffect(() => {
     // If no user, clear lists and do nothing else.
@@ -53,47 +75,18 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
 
     // The listener is set up once per user session.
     const unsubscribe = listenToUserListsChanges(userListsQuery, (updatedLists) => {
-      // Get the "previous" lists from our ref.
-      const previousLists = listsRef.current;
-      // Get the CURRENT active list ID from our ref.
-      const currentActiveListId = activeListIdRef.current;
-
-      const activeList = updatedLists.find((list) => list.id === currentActiveListId);
-      const previousActiveList = previousLists.find((list) => list.id === currentActiveListId);
-
-      if (activeList && previousActiveList && activeList.items.length > previousActiveList.items.length) {
-        const previousItemIds = new Set(previousActiveList.items.map((item) => item.id));
-        const newItems = activeList.items.filter((item) => !previousItemIds.has(item.id));
-
-        if (newItems.length > 0) {
-          const firstNewItem = newItems[0];
-          console.log(`New item '${firstNewItem.name}' detected. Triggering notification.`);
-          setNotification({
-            id: Date.now().toString(),
-            message: `'${user.displayName || 'a member'} ${t.notification_added_item}  ${firstNewItem.name}  {${activeList.name}}  `,
-            listName: activeList.name,
-            timestamp: Date.now(),
-            type: NotificationType.INFO,
-          });
-        }
-      }
-      // After checking for notifications, update the state.
       setLists(updatedLists);
     });
 
     // Cleanup the listener when the user logs out.
     return () => unsubscribe();
+
   }, [user?.uid]); // The listener's lifecycle is correctly tied ONLY to the user.
 
   useEffect(() => {
     FirebaseProductCacheService.setActiveList(activeListId);
   }, [activeListId]);
-
-  const onUserListChange = (userLists: ShoppingList[]) => {
-    setLists(userLists);
-    console.log('userLists:', userLists);
-  };
-
+  
   const activeList = useMemo(() => {
     if (!activeListId) {
       return null;

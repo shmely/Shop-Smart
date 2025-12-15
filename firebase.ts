@@ -2,9 +2,11 @@ import { initializeApp } from "firebase/app";
 import {
     getAuth,
     setPersistence,             // פונקציה להגדרת המדיניות
-    browserLocalPersistence     // המדיניות עצמה (לשמור מקומית)
+    browserLocalPersistence,     // המדיניות עצמה (לשמור מקומית)
+    connectAuthEmulator
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
 
 const firebaseConfig = {
@@ -18,10 +20,17 @@ const firebaseConfig = {
 };
 
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
 
 export const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence)
 export const db = getFirestore(app);
+const functions = getFunctions(app);
 
+if (window.location.hostname === "localhost") {
+  console.log("Connecting to local Firebase emulators...");
+  connectAuthEmulator(auth, "http://localhost:9099");
+  connectFirestoreEmulator(db, "localhost", 8080);
+  connectFunctionsEmulator(functions, "localhost", 5001);
+}
