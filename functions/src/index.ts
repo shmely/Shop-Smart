@@ -59,7 +59,10 @@ export const sendNotificationOnItemAdd = functions.firestore.onDocumentUpdated(
       },
     };
 
-    console.log(`Sending notification about '${newItem.name}' to  token(s).`);
+    console.log(
+      `Sending notification about '${newItem.name}' to ` +
+      `${allTokens.length} token(s).`
+    );
     return admin.messaging().sendEachForMulticast({
       tokens: allTokens,
       notification: payload.notification,
