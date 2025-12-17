@@ -291,6 +291,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
         deleteList,
         deleteItem,
         updateItemQuantity,
+        addListMemberByEmail
       }}
     >
       {children}

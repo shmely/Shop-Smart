@@ -25,4 +25,5 @@ export type ShopSmartContextType = {
         itemToUpdate: ListItem, // <-- Changed from itemId
         newGroupId: GroupId
     ) => Promise<void>;
+    addListMemberByEmail: (email: string) => Promise<{ subject: string; body: string } | null>;
 };

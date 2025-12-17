@@ -2,13 +2,15 @@ import { useContext, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { UserContext } from '@/context/UserContext';
+import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 
 interface Props {
   setIsOpen: (isOpen: boolean) => void;
 }
 
 export default function ShareListModal({ setIsOpen }: Props) {
-  const { addListMemberByEmail,t } = useContext(UserContext);
+  const { t } = useContext(UserContext);
+  const { addListMemberByEmail } = useContext(ShopSmartContext);
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
