@@ -69,16 +69,24 @@ export const sendNotificationOnItemAdd = functions.firestore.onDocumentUpdated(
     });
   });
 
-// Define the Gemini API Key as a secret loaded from the environment
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+let genAI: GoogleGenerativeAI | undefined;
+let model: import("@google/generative-ai").GenerativeModel | undefined;
 
-// Initialize Gemini AI client only if the key exists
-if (!GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY is not set in the environment.");
-  throw new Error("GEMINI_API_KEY is not set in the environment.");
-}
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"});
+
+const initializeGemini = () => {
+  if (!genAI) {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      console.error("FATAL: GEMINI_API_KEY secret not loaded.");
+      throw new functions.https.HttpsError(
+        "internal",
+        "Server is missing API key configuration."
+      );
+    }
+    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    model = genAI.getGenerativeModel({model: "gemini-2.5-flash"});
+  }
+};
 
 interface CategorizeRequestData {
   itemName: string;
@@ -91,7 +99,7 @@ export const categorizeItemWithGemini = onCall(
   {secrets: ["GEMINI_API_KEY"]}, // Pass options as the first argument
   async (request: CallableRequest<CategorizeRequestData>) => {
     const {itemName, language, groups} = request.data;
-
+    initializeGemini();
     if (!itemName || !language || !groups) {
       throw new functions.https.HttpsError(
         "invalid-argument",
@@ -106,6 +114,12 @@ export const categorizeItemWithGemini = onCall(
     "If unsure, use \"other\".";
 
     try {
+      if (!model) {
+        throw new functions.https.HttpsError(
+          "internal",
+          "Gemini model is not initialized."
+        );
+      }
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
 
