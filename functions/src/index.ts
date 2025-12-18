@@ -1,9 +1,9 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-
-// --- THIS IS THE CRITICAL CHANGE ---
-// Use the "@/" alias you defined in tsconfig.json. Do NOT use "../../"
+import {onCall, CallableRequest} from "firebase-functions/v2/https";
+import {GoogleGenerativeAI} from "@google/generative-ai";
 import {ShoppingList, User} from "@/model/types";
+
 
 admin.initializeApp();
 
@@ -67,4 +67,62 @@ export const sendNotificationOnItemAdd = functions.firestore.onDocumentUpdated(
       tokens: allTokens,
       notification: payload.notification,
     });
+  });
+
+// Define the Gemini API Key as a secret loaded from the environment
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// Initialize Gemini AI client only if the key exists
+if (!GEMINI_API_KEY) {
+  console.error("GEMINI_API_KEY is not set in the environment.");
+  throw new Error("GEMINI_API_KEY is not set in the environment.");
+}
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"});
+
+interface CategorizeRequestData {
+  itemName: string;
+  language: "he" | "en";
+  groups: string[];
+}
+// This is the new callable function for your frontend to use
+// --- THIS IS THE CORRECTED DEFINITION ---
+export const categorizeItemWithGemini = onCall(
+  {secrets: ["GEMINI_API_KEY"]}, // Pass options as the first argument
+  async (request: CallableRequest<CategorizeRequestData>) => {
+    const {itemName, language, groups} = request.data;
+
+    if (!itemName || !language || !groups) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "The function must be called with 'itemName', 'language', and 'groups'."
+      );
+    }
+
+    const prompt =
+    `You are a grocery assistant. Categorize the item "${itemName}" ` +
+    `(Language: ${language}) into exactly one of the following Group IDs: ` +
+    `${groups.join(", ")}. Return ONLY the Group ID as a string. ` +
+    "If unsure, use \"other\".";
+
+    try {
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+
+      if (groups.includes(responseText)) {
+        return {groupId: responseText};
+      } else {
+        console.warn(
+          `Gemini returned an invalid group ID: '${responseText}'. ` +
+        "Defaulting to 'other'."
+        );
+        return {groupId: "other"};
+      }
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Failed to categorize item with Gemini."
+      );
+    }
   });
