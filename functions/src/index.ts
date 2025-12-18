@@ -69,24 +69,6 @@ export const sendNotificationOnItemAdd = functions.firestore.onDocumentUpdated(
     });
   });
 
-let genAI: GoogleGenerativeAI | undefined;
-let model: import("@google/generative-ai").GenerativeModel | undefined;
-
-
-const initializeGemini = () => {
-  if (!genAI) {
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      console.error("FATAL: GEMINI_API_KEY secret not loaded.");
-      throw new functions.https.HttpsError(
-        "internal",
-        "Server is missing API key configuration."
-      );
-    }
-    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    model = genAI.getGenerativeModel({model: "gemini-2.5-flash"});
-  }
-};
 
 interface CategorizeRequestData {
   itemName: string;
@@ -98,8 +80,21 @@ interface CategorizeRequestData {
 export const categorizeItemWithGemini = onCall(
   {secrets: ["GEMINI_API_KEY"]}, // Pass options as the first argument
   async (request: CallableRequest<CategorizeRequestData>) => {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY) {
+      console.error("FATAL: GEMINI_API_KEY secret not loaded or is empty.");
+      throw new functions.https.HttpsError(
+        "internal",
+        "Server is missing API key configuration."
+      );
+    }
+
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"});
+
     const {itemName, language, groups} = request.data;
-    initializeGemini();
+
     if (!itemName || !language || !groups) {
       throw new functions.https.HttpsError(
         "invalid-argument",
