@@ -1,5 +1,5 @@
 import { useEffect, useContext } from 'react';
-import { Language } from './model/types';
+import { Language } from './common/model/types';
 import Login from './components/Login';
 import { ShopSmartContext } from './context/ShopSmartContext/ShopSmartContext';
 import ListOfLists from './components/ListOfLists';

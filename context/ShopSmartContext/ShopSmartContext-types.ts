@@ -1,4 +1,4 @@
-import { GroupId, ListItem, ShoppingList, User, Notification, Group } from "@/model/types";
+import { GroupId, ListItem, ShoppingList, User, Notification, Group } from "@/common/model/types";
 
 export type ShopSmartContextType = {
     notification: Notification | null;

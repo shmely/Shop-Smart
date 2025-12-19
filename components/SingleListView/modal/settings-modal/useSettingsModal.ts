@@ -1,5 +1,5 @@
 import { ShopSmartContext } from "@/context/ShopSmartContext/ShopSmartContext";
-import { Group, GroupId } from "@/model/types";
+import { Group, GroupId } from "@/common/model/types";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useContext, useState } from "react";
 

@@ -74,3 +74,9 @@ export interface ProductCacheItem {
   groupId: GroupId;
   addedAt: number;
 }
+
+export interface CategorizeRequestData {
+  itemName: string;
+  language: "he" | "en";
+  groups: string[];
+}

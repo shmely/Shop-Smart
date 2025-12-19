@@ -1,4 +1,4 @@
-import { ShoppingList, Notification, ListItem, GroupId, User, Group, NotificationType } from '@/model/types';
+import { ShoppingList, Notification, ListItem, GroupId, User, Group, NotificationType } from '@/common/model/types';
 import { createContext, useState, ReactNode, useMemo, useEffect, useContext, useRef } from 'react';
 import { FirebaseProductCacheService } from '../../services/firebaseProductCacheService';
 import {
@@ -257,7 +257,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
 
     if (invitationWasCreated) {
       // If an invitation was created, generate the email content for the UI.
-      const appUrl = process.env.REACT_APP_BASE_URL || 'https://your-app-domain.web.app';
+      const appUrl = process.env.REACT_APP_BASE_URL || 'https://gen-lang-client-0854447705.web.app';
       const joinLink = `${appUrl}/join?listId=${activeListId}`;
 
       const subject = `Invitation to join "${activeList.name}" on Shop Smart`;

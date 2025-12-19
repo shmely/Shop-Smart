@@ -5,7 +5,7 @@ import {
     ProductCacheItem,
     ShoppingList,
     User,
-} from "../model/types";
+} from "../common/model/types";
 
 import { Auth, onAuthStateChanged } from "firebase/auth";
 

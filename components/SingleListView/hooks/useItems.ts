@@ -1,7 +1,7 @@
 import { useContext, useRef, useState } from "react";
 import { ShopSmartContext } from "@/context/ShopSmartContext/ShopSmartContext";
 import { categorizeItem } from "@/services/geminiService";
-import { ListItem } from "@/model/types";
+import { ListItem } from "@/common/model/types";
 import { UserContext } from "@/context/UserContext";
 
 export function useItems() {

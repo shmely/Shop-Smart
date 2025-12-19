@@ -11,7 +11,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableCategoryItem } from '../../SortableCategoryItem';
 import { UserContext } from '@/context/UserContext';
-import { Group } from '@/model/types';
+import { Group } from '@/common/model/types';
 
 interface Props {
   editingGroups: Group[];

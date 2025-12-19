@@ -1,6 +1,6 @@
 import { Unsubscribe } from "firebase/firestore";
 import { addProductToCache, subscribeToProductCache, updateProductCacheCategory } from "../data-layer/firebase-layer";
-import { GroupId, ProductCacheItem } from "../model/types";
+import { GroupId, ProductCacheItem } from "../common/model/types";
 
 
 

@@ -1,6 +1,5 @@
-import { Language, ShoppingList, User } from '../model/types';
+import { Language, User } from '../common/model/types';
 import { createContext, useState, useEffect, ReactNode, useMemo, useContext } from 'react';
-import { ShopSmartContext } from './ShopSmartContext/ShopSmartContext';
 import { auth } from '../firebase';
 import { TRANSLATIONS, STORAGE_KEYS } from '@/configuration/constants';
 import { getUserData, listenToAuthChanges, updateUserData } from '@/data-layer/firebase-layer';
@@ -32,7 +31,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const unsubscribe = listenToAuthChanges(auth, handleAuthChange);
     return () => unsubscribe();
   }, []);
-  
 
   useEffect(() => {
     try {
@@ -42,9 +40,9 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, [lang]);
 
-  const handleAuthChange = async (firebaseUser: User | null) => {   
-    if (firebaseUser) {     
-      const userRef = await getUserData(firebaseUser.uid);      
+  const handleAuthChange = async (firebaseUser: User | null) => {
+    if (firebaseUser) {
+      const userRef = await getUserData(firebaseUser.uid);
       await updateUserData(userRef, firebaseUser);
       setUser(firebaseUser);
 

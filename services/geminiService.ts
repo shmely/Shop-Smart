@@ -1,4 +1,4 @@
-import { GroupId } from "../model/types";
+import { GroupId } from "../common/model/types";
 import { FirebaseProductCacheService } from "./firebaseProductCacheService";
 import { getFunctions, httpsCallable } from "firebase/functions";
 

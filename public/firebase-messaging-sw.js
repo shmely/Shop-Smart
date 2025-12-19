@@ -4,13 +4,13 @@ importScripts("https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 
 // IMPORTANT: Replace this with your project's Firebase config object
 const firebaseConfig = {
-    apiKey: process.env.API_KEY,
-    authDomain: process.env.AUTH_DOMAIN,
-    projectId: process.env.PROJECT_ID,
-    storageBucket: process.env.STORAGE_BUCKET,
-    messagingSenderId: process.env.MESSAGING_SENDER_ID,
-    appId: process.env.APP_ID,
-    measurementId: process.env.MEASUREMENT_ID
+    apiKey: "AIzaSyBls2jHnIQXHaBU5Kaz3lu0XKqCC3DHTbg",
+    authDomain: "gen-lang-client-0854447705.firebaseapp.com",
+    projectId: "gen-lang-client-0854447705",
+    storageBucket: "gen-lang-client-0854447705.appspot.com",
+    messagingSenderId: "861915527720",
+    appId: "1:861915527720:web:d382f5c27f1396de82931d",
+    measurementId: "G-VECPP1CS9H"
 };
 
 firebase.initializeApp(firebaseConfig);

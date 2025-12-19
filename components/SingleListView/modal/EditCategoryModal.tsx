@@ -2,7 +2,7 @@ import {
   Group,
   GroupId,
   ListItem,
-} from "@/model/types";
+} from "@/common/model/types";
 import { ShopSmartContext } from "@/context/ShopSmartContext/ShopSmartContext";
 import { TRANSLATIONS } from "@/configuration/constants";
 import { useContext } from "react";

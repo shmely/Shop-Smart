@@ -1,4 +1,4 @@
-import { Group } from '@/model/types';
+import { Group } from '@/common/model/types';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
 
