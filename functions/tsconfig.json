@@ -1,25 +1,17 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "target": "es2017",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
     "outDir": "lib",
-    "sourceMap": true,
+    "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-
-    // --- THE MONOREPO FIX ---
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["../*"]
-    },
-    "typeRoots": ["./node_modules/@types"],
-    "types": []
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "compileOnSave": true,
-   "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

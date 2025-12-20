@@ -1,18 +1,19 @@
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
-import {onCall, CallableRequest} from "firebase-functions/v2/https";
-import {GoogleGenerativeAI} from "@google/generative-ai";
+import admin from "firebase-admin";
+import { onCall, CallableRequest } from "firebase-functions/v2/https";
+// Updated to v2 firestore for compatibility with Node 24
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   CategorizeRequestData,
   ShoppingList,
   User,
-} from "../../common/model/types";
-
+} from "../src/common/model/types.js";
 
 admin.initializeApp();
 
 export const categorizeItemWithGemini = onCall(
-  {secrets: ["GEMINI_API_KEY"]},
+  { secrets: ["GEMINI_API_KEY"] },
   async (request: CallableRequest<CategorizeRequestData>) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -25,9 +26,10 @@ export const categorizeItemWithGemini = onCall(
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({model: "gemini-2.5-flash"});
+    // Corrected model name to 1.5-flash
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const {itemName, language, groups} = request.data;
+    const { itemName, language, groups } = request.data;
 
     if (!itemName || !language || !groups) {
       throw new functions.https.HttpsError(
@@ -37,29 +39,23 @@ export const categorizeItemWithGemini = onCall(
     }
 
     const prompt =
-    `You are a grocery assistant. Categorize the item "${itemName}" ` +
-    `(Language: ${language}) into exactly one of the following Group IDs: ` +
-    `${groups.join(", ")}. Return ONLY the Group ID as a string. ` +
-    "If unsure, use \"other\".";
+      `You are a grocery assistant. Categorize the item "${itemName}" ` +
+      `(Language: ${language}) into exactly one of the following Group IDs: ` +
+      `${groups.join(", ")}. Return ONLY the Group ID as a string. ` +
+      "If unsure, use \"other\".";
 
     try {
-      if (!model) {
-        throw new functions.https.HttpsError(
-          "internal",
-          "Gemini model is not initialized."
-        );
-      }
       const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+      const responseText = result.response.text().trim(); // Trimmed to avoid accidental whitespace errors
 
       if (groups.includes(responseText)) {
-        return {groupId: responseText};
+        return { groupId: responseText };
       } else {
         console.warn(
           `Gemini returned an invalid group ID: '${responseText}'. ` +
-        "Defaulting to 'other'."
+          "Defaulting to 'other'."
         );
-        return {groupId: "other"};
+        return { groupId: "other" };
       }
     } catch (error) {
       console.error("Error calling Gemini API:", error);
@@ -68,32 +64,36 @@ export const categorizeItemWithGemini = onCall(
         "Failed to categorize item with Gemini."
       );
     }
-  });
+  }
+);
 
-export const sendNotificationOnItemAdd = functions.firestore.onDocumentUpdated(
+export const sendNotificationOnItemAdd = onDocumentUpdated(
   "shoppingLists/{listId}",
   async (event) => {
-    if (!event.data) {
+    const data = event.data;
+    if (!data) {
       console.error("event.data is undefined.");
-      return null;
-    }
-    const listAfter = event.data.after.data() as ShoppingList;
-    const listBefore = event.data.before.data() as ShoppingList;
-
-    if (listAfter.items.length <= listBefore.items.length) {
-      return null;
+      return;
     }
 
-    const beforeItemIds = new Set(listBefore.items.map((item) => item.id));
-    const newItem = listAfter.items.find((item) => !beforeItemIds.has(item.id));
+    const listAfter = data.after.data() as ShoppingList;
+    const listBefore = data.before.data() as ShoppingList;
+
+    // Check if items were actually added
+    if (!listAfter.items || !listBefore.items || listAfter.items.length <= listBefore.items.length) {
+      return;
+    }
+
+    const beforeItemIds = new Set(listBefore.items.map((item: any) => item.id));
+    const newItem = listAfter.items.find((item: any) => !beforeItemIds.has(item.id));
 
     if (!newItem) {
-      return null;
+      return;
     }
 
-    const membersToNotify = listAfter.members;
+    const membersToNotify = listAfter.members || [];
     if (membersToNotify.length === 0) {
-      return null;
+      return;
     }
 
     const userPromises = membersToNotify.map((uid: string) =>
@@ -101,32 +101,34 @@ export const sendNotificationOnItemAdd = functions.firestore.onDocumentUpdated(
     );
     const userDocs = await Promise.all(userPromises);
 
-    const allTokens = userDocs.flatMap((doc) => {
+    const allTokens = userDocs.flatMap((doc: any) => {
       const userData = doc.data() as User | undefined;
       return userData?.fcmTokens || [];
     });
 
     if (allTokens.length === 0) {
       console.log("Found members to notify, but no registered FCM tokens.");
-      return null;
+      return;
     }
 
-    const payload = {
+    const notificationPayload = {
       notification: {
         title: `New item in "${listAfter.name}"`,
         body: `${newItem.name} was added to the list.`,
-        icon: "/icon-192x192.png",
       },
     };
 
     console.log(
-      `Sending notification about '${newItem.name}' to ` +
-      `${allTokens.length} token(s).`
+      `Sending notification about '${newItem.name}' to ${allTokens.length} token(s).`
     );
-    return admin.messaging().sendEachForMulticast({
-      tokens: allTokens,
-      notification: payload.notification,
-    });
-  });
 
-
+    try {
+      await admin.messaging().sendEachForMulticast({
+        tokens: allTokens,
+        notification: notificationPayload.notification,
+      });
+    } catch (error) {
+      console.error("Error sending multicast notification:", error);
+    }
+  }
+);
