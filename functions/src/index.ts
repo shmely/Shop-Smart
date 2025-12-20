@@ -8,12 +8,16 @@ import {
   CategorizeRequestData,
   ShoppingList,
   User,
-} from "../src/common/model/types.js";
+} from "./common/model/types.js";
 
 admin.initializeApp();
 
 export const categorizeItemWithGemini = onCall(
-  { secrets: ["GEMINI_API_KEY"] },
+  { secrets: ["GEMINI_API_KEY"],
+    cors: true,
+    region: "us-central1",
+    invoker: "public"
+   },
   async (request: CallableRequest<CategorizeRequestData>) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -27,7 +31,7 @@ export const categorizeItemWithGemini = onCall(
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     // Corrected model name to 1.5-flash
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const { itemName, language, groups } = request.data;
 
@@ -61,7 +65,7 @@ export const categorizeItemWithGemini = onCall(
       console.error("Error calling Gemini API:", error);
       throw new functions.https.HttpsError(
         "internal",
-        "Failed to categorize item with Gemini."
+        `Failed to categorize item with Gemini: ${error}`
       );
     }
   }
