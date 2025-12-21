@@ -95,7 +95,7 @@ export const sendNotificationOnItemAdd = onDocumentUpdated(
       return;
     }
 
-    const membersToNotify = listAfter.members || [];
+    const membersToNotify = listAfter.members?.filter(uid => uid !== newItem.addedBy);
     if (membersToNotify.length === 0) {
       return;
     }
