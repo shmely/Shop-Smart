@@ -1,4 +1,3 @@
-import { TRANSLATIONS } from '@/configuration/constants';
 import { PlusIcon } from '@/configuration/icons';
 import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 import { UserContext } from '@/context/UserContext';

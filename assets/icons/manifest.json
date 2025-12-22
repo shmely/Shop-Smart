@@ -1,7 +1,6 @@
 {
   "name": "קניה משפחתית",
-  "description": "לשתף את רשימת הקניות ולאפשר לכל המשפחה לערוך אותה",
-  "requestFramePermissions": [],
+  "description": "לשתף את רשימת הקניות ולאפשר לכל המשפחה לערוך אותה", 
    "icons": [
     {
       "src": "/images/icon-192.png",
