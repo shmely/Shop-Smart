@@ -7,12 +7,13 @@ import {} from './configuration/icons';
 import SingleListView from './components/SingleListView/SingleListView';
 import { NotificationToast } from './components/NotificationToast';
 import { UserContext } from './context/UserContext';
+import useFirebaseNotifications from '.';
 
 export default function App() {
   const { setNotification } = useContext(ShopSmartContext);
   const { lang, user, isAuthLoading, t } = useContext(UserContext);
   const { activeListId } = useContext(ShopSmartContext);
-
+  useFirebaseNotifications();
   useEffect(() => {
     document.documentElement.dir = lang === Language.HE ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;

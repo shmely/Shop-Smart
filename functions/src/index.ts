@@ -117,8 +117,8 @@ export const sendNotificationOnItemAdd = onDocumentUpdated(
 
     const notificationPayload = {
       notification: {
-        title: `New item in "${listAfter.name}"`,
-        body: `${newItem.name} was added to the list.`,
+        title: `מוצר חדש "${listAfter.name}"`,
+        body: `${newItem.name} נוסף לרשימה.`,
       },
     };
 
