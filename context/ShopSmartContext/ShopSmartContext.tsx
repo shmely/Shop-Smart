@@ -260,7 +260,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
       const appUrl = process.env.REACT_APP_BASE_URL || 'https://gen-lang-client-0854447705.web.app';
       const joinLink = `${appUrl}/join?listId=${activeListId}`;
 
-      const subject = `Invitation to join "${activeList.name}" on Shop Smart`;
+      const subject = `הזמנה להצטרף לרשומה "${activeList.name}" ב-Shop Smart`;
       const body = joinLink;
 
       return { subject, body };
