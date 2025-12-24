@@ -41,14 +41,18 @@ export default function ShareListModal({ setIsOpen }: Props) {
   }, [email]);
 
   useEffect(() => {
+    if (phone.trim().length === 0) {
+      setPhoneError('');
+    }
     const isValidPhone = phoneRegex.test(phone.trim());
     if (isValidPhone) {
       setPhoneError('');
       setDisableSendWhatsApp(false);
       return;
+    } else {
+      setPhoneError(isValidPhone && phone.trim().length > 0 ? '' : t.invalid_phone || 'Invalid phone number');
+      setDisableSendWhatsApp(true);
     }
-    setPhoneError(isValidPhone && phone.trim().length > 0 ? '' : t.invalid_phone || 'Invalid phone number');
-    setDisableSendWhatsApp(true);
   }, [phone]);
 
   const handleAddMember = async () => {
