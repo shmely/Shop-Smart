@@ -50,7 +50,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
       setDisableSendWhatsApp(false);
       return;
     } else {
-      setPhoneError(isValidPhone && phone.trim().length > 0 ? '' : t.invalid_phone || 'Invalid phone number');
+      setPhoneError(isValidPhone || phone.trim().length > 0 ? '' : t.invalid_phone || 'Invalid phone number');
       setDisableSendWhatsApp(true);
     }
   }, [phone]);
