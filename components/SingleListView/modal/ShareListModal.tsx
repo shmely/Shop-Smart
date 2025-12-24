@@ -41,16 +41,13 @@ export default function ShareListModal({ setIsOpen }: Props) {
   }, [email]);
 
   useEffect(() => {
-    if (phone.trim().length === 0) {
-      setPhoneError('');
-    }
     const isValidPhone = phoneRegex.test(phone.trim());
     if (isValidPhone) {
       setPhoneError('');
       setDisableSendWhatsApp(false);
       return;
     } else {
-      setPhoneError(isValidPhone || phone.trim().length > 0 ? '' : t.invalid_phone || 'Invalid phone number');
+      setPhoneError(isValidPhone || phone.trim().length === 0 ? '' : t.invalid_phone || 'מספר טלפון לא תקין');
       setDisableSendWhatsApp(true);
     }
   }, [phone]);
@@ -58,7 +55,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
   const handleAddMember = async () => {
     setError('');
     if (!email.trim() || (!emailValid && !!error)) {
-      setError(t.invalid_email || 'Invalid email address');
+      setError(t.invalid_email || 'אימייל לא תקין');
       return;
     }
     setIsLoading(true);
@@ -67,8 +64,8 @@ export default function ShareListModal({ setIsOpen }: Props) {
       const result = await addListMemberByEmail(email);
       if (result) {
         const invitation = {
-          subject: result.subject || 'Join my shopping list!',
-          body: result.body || 'Hi! Join our family shopping list on ShopSmart: [invite link here]',
+          subject: result.subject || 'הצטרף לקרשימת הקניות המשפחתית!',
+          body: result.body || 'שלום! הצטרף לרשימת הקניות המשפחתית שלנו ב-ShopSmart: [קישור הזמנה כאן]',
         };
         setInvitation(invitation);
       } else {
