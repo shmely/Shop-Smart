@@ -7,7 +7,7 @@ import { UserProvider } from './context/UserContext';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { app } from './firebase';
 
-const vapidKey = "leJBBOx0ILR1M4bzC8gTepKjXc53GHzN1NIHFwzyT8Y";
+const vapidKey = "BPehY3HLjxtf7b_yI_QxaY4K3bo-gGL565ZiiT8F_QrOo_DmTz1vENCl8xzDyWR3CzETnIHB7ZUdIidu_9CO76g";
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Could not find root element to mount to');
