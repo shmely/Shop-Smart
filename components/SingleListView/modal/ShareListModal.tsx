@@ -7,11 +7,11 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  TextField,
-  InputAdornment,
+  TextField  
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import SendIcon from '@mui/icons-material/Send';
 import { UserContext } from '@/context/UserContext';
 import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 
@@ -20,6 +20,7 @@ interface Props {
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\+?\d{10,14}$/;
 
 export default function ShareListModal({ setIsOpen }: Props) {
   const { t } = useContext(UserContext);
@@ -39,19 +40,25 @@ export default function ShareListModal({ setIsOpen }: Props) {
   } | null>(null);
 
   useEffect(() => {
-    const isValidEmail = emailRegex.test(email);
+    const isValidEmail = emailRegex.test(email.trim());
     setEmailValid(isValidEmail);
     if (isValidEmail && !isLoading) {
       setDisableSendEmail(false);
     } else {
       setDisableSendEmail(true);
     }
-  }, [email]);
+  }, [email]);  
 
-  const handleCopyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // Optional: show a small notification that text was copied
-  };
+  useEffect(() => {
+    const isValidPhone = phoneRegex.test(phone.trim());
+    if (isValidPhone) {
+      setPhoneError('');
+      setDisableSendWhatsApp(false);
+      return;
+    }
+    setPhoneError(isValidPhone ? '' : t.invalid_phone || 'Invalid phone number');
+    setDisableSendWhatsApp(true);
+  }, [phone]);
 
   const handleAddMember = async () => {
     setError('');
@@ -134,26 +141,18 @@ export default function ShareListModal({ setIsOpen }: Props) {
           <EmailIcon />
         </IconButton>
         <IconButton
-          //disabled={!phone || !!phoneError || isLoading || !emailValid || !!error}
+          disabled={disableSendEmail}
           onClick={() => setShowPhoneInput(true)}
           title={t.send_whatsapp}
           sx={{
-            color:
-              !emailValid ||
-              isLoading ||
-              (emailValid && (!!phoneError || !phone)) ||
-              isLoading ||
-              !!error ||
-              (showPhoneInput && !phone)
-                ? (theme) => theme.palette.action.disabled
-                : '#25D366',
+            color: disableSendEmail ? (theme) => theme.palette.action.disabled : '#25D366',
           }}
         >
           <WhatsAppIcon />
         </IconButton>
 
         {showPhoneInput && (
-          <>
+          <div className="flex items-center mt-4">
             <Box sx={{ mt: 2 }}>
               <TextField
                 label={t.phone_number || 'מספר טלפון'}
@@ -164,10 +163,10 @@ export default function ShareListModal({ setIsOpen }: Props) {
                 fullWidth
               />
             </Box>
-            <IconButton disabled={!phone || !!phoneError} onClick={handleOpenWhatsApp} title={t.send_whatsapp}>
-              <WhatsAppIcon />
+            <IconButton disabled={disableSendWhatsApp} onClick={handleOpenWhatsApp} title={t.send_whatsapp}>
+              <SendIcon  className='-scale-x-100'/>
             </IconButton>
-          </>
+          </div>
         )}
       </DialogContent>
       <DialogActions>
