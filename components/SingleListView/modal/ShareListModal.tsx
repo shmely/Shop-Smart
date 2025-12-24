@@ -1,14 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  TextField  
-} from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import SendIcon from '@mui/icons-material/Send';
@@ -47,7 +38,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
     } else {
       setDisableSendEmail(true);
     }
-  }, [email]);  
+  }, [email]);
 
   useEffect(() => {
     const isValidPhone = phoneRegex.test(phone.trim());
@@ -56,7 +47,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
       setDisableSendWhatsApp(false);
       return;
     }
-    setPhoneError(isValidPhone ? '' : t.invalid_phone || 'Invalid phone number');
+    setPhoneError(isValidPhone && phone.trim().length > 0 ? '' : t.invalid_phone || 'Invalid phone number');
     setDisableSendWhatsApp(true);
   }, [phone]);
 
@@ -163,8 +154,15 @@ export default function ShareListModal({ setIsOpen }: Props) {
                 fullWidth
               />
             </Box>
-            <IconButton disabled={disableSendWhatsApp} onClick={handleOpenWhatsApp} title={t.send_whatsapp}>
-              <SendIcon  className='-scale-x-100'/>
+            <IconButton
+              disabled={disableSendWhatsApp}
+              onClick={handleOpenWhatsApp}
+              title={t.send_whatsapp}
+              sx={{
+                color: disableSendWhatsApp ? (theme) => theme.palette.action.disabled : '#25D366',
+              }}
+            >
+              <SendIcon className="-scale-x-100" />
             </IconButton>
           </div>
         )}
