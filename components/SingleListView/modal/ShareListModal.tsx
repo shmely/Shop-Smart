@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -30,11 +30,23 @@ export default function ShareListModal({ setIsOpen }: Props) {
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  // State to hold the generated email content
+  const [emailValid, setEmailValid] = useState(false);
+  const [disableSendEmail, setDisableSendEmail] = useState(true);
+  const [disableSendWhatsApp, setDisableSendWhatsApp] = useState(true);
   const [invitation, setInvitation] = useState<{
     subject: string;
     body: string;
   } | null>(null);
+
+  useEffect(() => {
+    const isValidEmail = emailRegex.test(email);
+    setEmailValid(isValidEmail);
+    if (isValidEmail && !isLoading) {
+      setDisableSendEmail(false);
+    } else {
+      setDisableSendEmail(true);
+    }
+  }, [email]);
 
   const handleCopyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -43,7 +55,7 @@ export default function ShareListModal({ setIsOpen }: Props) {
 
   const handleAddMember = async () => {
     setError('');
-    if (!email.trim() || !emailRegex.test(email)) {
+    if (!email.trim() || (!emailValid && !!error)) {
       setError(t.invalid_email || 'Invalid email address');
       return;
     }
@@ -110,43 +122,52 @@ export default function ShareListModal({ setIsOpen }: Props) {
           onChange={(e) => setEmail(e.target.value)}
           error={!!error}
           helperText={error}
-          InputProps={{
-            endAdornment: email && emailRegex.test(email) && (
-              <InputAdornment position="end">
-                <IconButton disabled={isLoading} onClick={handleOpenGmail} title={t.send_email}>
-                  <EmailIcon />
-                </IconButton>
-                <IconButton
-                  disabled={!phone || !!phoneError}
-                  onClick={() => setShowPhoneInput(true)}
-                  title={t.send_whatsapp}
-                >
-                  <WhatsAppIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
         />
+        <IconButton
+          disabled={disableSendEmail}
+          onClick={handleOpenGmail}
+          title={t.send_email}
+          sx={{
+            color: disableSendEmail ? (theme) => theme.palette.action.disabled : '#EA4335',
+          }}
+        >
+          <EmailIcon />
+        </IconButton>
+        <IconButton
+          //disabled={!phone || !!phoneError || isLoading || !emailValid || !!error}
+          onClick={() => setShowPhoneInput(true)}
+          title={t.send_whatsapp}
+          sx={{
+            color:
+              !emailValid ||
+              isLoading ||
+              (emailValid && (!!phoneError || !phone)) ||
+              isLoading ||
+              !!error ||
+              (showPhoneInput && !phone)
+                ? (theme) => theme.palette.action.disabled
+                : '#25D366',
+          }}
+        >
+          <WhatsAppIcon />
+        </IconButton>
+
         {showPhoneInput && (
-          <Box sx={{ mt: 2 }}>
-            <TextField
-              label={t.phone_number || 'Phone Number'}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              error={!!phoneError}
-              helperText={phoneError || t.phone_hint}
-              fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={handleOpenWhatsApp} title={t.send_whatsapp}>
-                      <WhatsAppIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Box>
+          <>
+            <Box sx={{ mt: 2 }}>
+              <TextField
+                label={t.phone_number || 'מספר טלפון'}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                error={!!phoneError}
+                helperText={phoneError || t.phone_hint}
+                fullWidth
+              />
+            </Box>
+            <IconButton disabled={!phone || !!phoneError} onClick={handleOpenWhatsApp} title={t.send_whatsapp}>
+              <WhatsAppIcon />
+            </IconButton>
+          </>
         )}
       </DialogContent>
       <DialogActions>
