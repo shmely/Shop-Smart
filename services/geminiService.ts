@@ -30,7 +30,7 @@ export const categorizeItem = async (itemName: string, language: 'he' | 'en'): P
     return groupId;
 
   } catch (error) {
-    console.error("Cloud Function for categorization failed:", error);
+    console.error("Cloud Function for categorization failed:", JSON.stringify(error));
     // If the function fails, default to 'other'
     return GroupId.OTHER;
   }
