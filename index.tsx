@@ -1,4 +1,4 @@
-import React, { useEffect,useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ShopSmartProvider } from './context/ShopSmartContext/ShopSmartContext';
@@ -18,12 +18,25 @@ if (!rootElement) {
 function useFirebaseNotifications() {
   const { setNotification } = useContext(ShopSmartContext);
   useEffect(() => {
-    
     const setupFCM = async () => {
       if (!('serviceWorker' in navigator)) return;
       console.log('Registering service worker for FCM...');
       try {
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing;
+          if (installingWorker) {
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  console.log('New content is available; please refresh.');
+                  // Optional: Force a reload
+                  // window.location.reload();
+                }
+              }
+            };
+          }
+        };
         const messaging = getMessaging(app);
 
         const permission = await Notification.requestPermission();
@@ -40,11 +53,11 @@ function useFirebaseNotifications() {
         const unsubscribe = onMessage(messaging, (payload) => {
           console.log('Foreground message received!!', payload);
           setNotification({
-            id:payload?.messageId || '',
+            id: payload?.messageId || '',
             listName: payload?.data?.title || 'רשימה מעודכנת',
             message: payload?.data?.body || 'עודכנה רשימה!',
             timestamp: Date.now(),
-             type: NotificationType.INFO
+            type: NotificationType.INFO,
           });
           //alert(`${JSON.stringify(payload)}`);
         });

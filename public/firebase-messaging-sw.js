@@ -1,3 +1,16 @@
+// Version 1.1
+/* eslint-disable no-undef */
+// 1. Add the Lifecycle Listeners at the top
+self.addEventListener('install', (event) => {
+  // Forces the waiting service worker to become the active service worker
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  // Allows the service worker to start controlling the page immediately
+  event.waitUntil(clients.claim());
+});
+
 // Import and initialize the Firebase SDK
 importScripts("https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js");
@@ -24,9 +37,10 @@ messaging.onBackgroundMessage((payload) => {
         payload
     );
 
-    const notificationTitle = payload.notification.title;
+    const notificationTitle = payload.data.listName || 'רשימה מעודכנת';
     const notificationOptions = {
-        body: payload.notification.body,
+        body: payload?.data?.body || 'עודכנה רשימה!',
+        title: payload?.data?.title || 'רשימה מעודכנת',
         icon: '/assets/icons/icon-192x192.png'
     };
 
