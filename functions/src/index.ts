@@ -36,7 +36,7 @@ export const categorizeItemWithGemini = onCall(
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     // Corrected model name to 1.5-flash
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" },{ apiVersion: "v1beta" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, { apiVersion: "v1beta" });
 
     const { itemName, language, groups } = request.data;
 
@@ -99,11 +99,11 @@ export const sendNotificationOnItemAdd = onDocumentUpdated(
     if (!newItem) {
       return;
     }
-
-    const membersToNotify = listAfter.members?.filter(uid => uid !== newItem.addedBy);
-    if (membersToNotify.length === 0) {
-      return;
-    }
+    const membersToNotify = listAfter.members
+    // const membersToNotify = listAfter.members?.filter(uid => uid !== newItem.addedBy);
+    // if (membersToNotify.length === 0) {
+    //   return;
+    // }
 
     const userPromises = membersToNotify.map((uid: string) =>
       admin.firestore().collection("users").doc(uid).get()
@@ -121,20 +121,23 @@ export const sendNotificationOnItemAdd = onDocumentUpdated(
     }
 
     const notificationPayload = {
+      // Use 'data' instead of 'notification' for more reliable foreground handling
+      data: {
+        title: `מוצר חדש "${listAfter.name}"`,
+        body: `${newItem.name} נוסף לרשימה.`,
+        type: "ITEM_ADDED"
+      },
+      // Keep notification for background/iOS system tray support
       notification: {
         title: `מוצר חדש "${listAfter.name}"`,
         body: `${newItem.name} נוסף לרשימה.`,
       },
     };
 
-    console.log(
-      `Sending notification about '${newItem.name}' to ${allTokens.length} token(s).`
-    );
-
     try {
       await admin.messaging().sendEachForMulticast({
         tokens: allTokens,
-        notification: notificationPayload.notification,
+        data: notificationPayload.data,
       });
     } catch (error) {
       console.error("Error sending multicast notification:", error);

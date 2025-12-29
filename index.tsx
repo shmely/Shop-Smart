@@ -7,7 +7,7 @@ import { UserProvider } from './context/UserContext';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { app } from './firebase';
 
-const vapidKey = "BPehY3HLjxtf7b_yI_QxaY4K3bo-gGL565ZiiT8F_QrOo_DmTz1vENCl8xzDyWR3CzETnIHB7ZUdIidu_9CO76g";
+const vapidKey = 'BPehY3HLjxtf7b_yI_QxaY4K3bo-gGL565ZiiT8F_QrOo_DmTz1vENCl8xzDyWR3CzETnIHB7ZUdIidu_9CO76g';
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Could not find root element to mount to');
@@ -15,29 +15,38 @@ if (!rootElement) {
 
 function useFirebaseNotifications() {
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    const setupFCM = async () => {
+      if (!('serviceWorker' in navigator)) return;
+      console.log('Registering service worker for FCM...');
+      try {
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         const messaging = getMessaging(app);
 
-        // Request permission
         const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-          // Get FCM token
+        if (permission === 'granted') {
           const token = await getToken(messaging, {
             vapidKey,
             serviceWorkerRegistration: registration,
           });
-          // TODO: Save this token to Firestore under the user's document
+          console.log('Token:', token);
+          // SAVE TOKEN TO FIRESTORE HERE
         }
 
-        // Foreground messages
-        onMessage(messaging, (payload) => {
-          // Show in-app notification or UI update
-          console.log("Foreground message:", payload);
+        // IMPORTANT: onMessage returns an unsubscribe function
+        const unsubscribe = onMessage(messaging, (payload) => {
+          console.log('Foreground message received!!', payload);
+          // Since it's foreground, the browser WON'T show a popup automatically.
+          // You should trigger a custom UI toast here.
+          alert(`${payload.notification?.title}: ${payload.notification?.body}`);
         });
-      });
-    }
+
+        return unsubscribe;
+      } catch (err) {
+        console.error('FCM Setup Error:', err);
+      }
+    };
+
+    setupFCM();
   }, []);
 }
 
