@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ShopSmartProvider } from './context/ShopSmartContext/ShopSmartContext';
@@ -6,6 +6,8 @@ import Header from './components/Header/Header';
 import { UserProvider } from './context/UserContext';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { app } from './firebase';
+import { ShopSmartContext } from './context/ShopSmartContext/ShopSmartContext';
+import { NotificationType } from './common/model/types';
 
 const vapidKey = 'BPehY3HLjxtf7b_yI_QxaY4K3bo-gGL565ZiiT8F_QrOo_DmTz1vENCl8xzDyWR3CzETnIHB7ZUdIidu_9CO76g';
 const rootElement = document.getElementById('root');
@@ -14,7 +16,9 @@ if (!rootElement) {
 }
 
 function useFirebaseNotifications() {
+  const { setNotification } = useContext(ShopSmartContext);
   useEffect(() => {
+    
     const setupFCM = async () => {
       if (!('serviceWorker' in navigator)) return;
       console.log('Registering service worker for FCM...');
@@ -35,9 +39,14 @@ function useFirebaseNotifications() {
         // IMPORTANT: onMessage returns an unsubscribe function
         const unsubscribe = onMessage(messaging, (payload) => {
           console.log('Foreground message received!!', payload);
-          // Since it's foreground, the browser WON'T show a popup automatically.
-          // You should trigger a custom UI toast here.
-          alert(`${payload.notification?.title}: ${payload.notification?.body}`);
+          setNotification({
+            id:payload?.messageId || '',
+            listName: payload?.data?.title || 'רשימה מעודכנת',
+            message: payload?.data?.body || 'עודכנה רשימה!',
+            timestamp: Date.now(),
+             type: NotificationType.INFO
+          });
+          //alert(`${JSON.stringify(payload)}`);
         });
 
         return unsubscribe;
@@ -47,7 +56,7 @@ function useFirebaseNotifications() {
     };
 
     setupFCM();
-  }, []);
+  }, [setNotification]);
 }
 
 const root = ReactDOM.createRoot(rootElement);
