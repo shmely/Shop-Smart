@@ -99,11 +99,11 @@ export const sendNotificationOnItemAdd = onDocumentUpdated(
     if (!newItem) {
       return;
     }
-    const membersToNotify = listAfter.members
-    // const membersToNotify = listAfter.members?.filter(uid => uid !== newItem.addedBy);
-    // if (membersToNotify.length === 0) {
-    //   return;
-    // }
+    // const membersToNotify = listAfter.members
+    const membersToNotify = listAfter.members?.filter(uid => uid !== newItem.addedBy);
+    if (membersToNotify.length === 0) {
+      return;
+    }
 
     const userPromises = membersToNotify.map((uid: string) =>
       admin.firestore().collection("users").doc(uid).get()
