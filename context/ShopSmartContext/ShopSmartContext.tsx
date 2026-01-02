@@ -25,7 +25,7 @@ interface ShopSmartProviderProps {
 }
 
 export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
-  const { user,t } = useContext(UserContext);
+  const { user, t } = useContext(UserContext);
   const [notification, setNotification] = useState<Notification | null>(null);
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(localStorage.getItem(STORAGE_KEYS.ACTIVE_LIST_ID));
@@ -44,13 +44,13 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     // This effect sets up the listener for foreground messages.
     const messaging = getMessaging(app);
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Foreground message received: ", payload);
+      console.log('Foreground message received: ', payload);
 
       // We have a notification payload. Let's display it using our in-app notification system.
       if (payload.notification) {
         setNotification({
           id: payload.messageId || Date.now().toString(),
-          message: payload.notification.body || "You have a new message.",
+          message: payload.notification.body || 'You have a new message.',
           listName: payload.notification.title, // Or parse from body if needed
           timestamp: Date.now(),
           type: NotificationType.INFO, // Or determine from payload data
@@ -80,13 +80,12 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
 
     // Cleanup the listener when the user logs out.
     return () => unsubscribe();
-
   }, [user?.uid]); // The listener's lifecycle is correctly tied ONLY to the user.
 
   useEffect(() => {
     FirebaseProductCacheService.setActiveList(activeListId);
   }, [activeListId]);
-  
+
   const activeList = useMemo(() => {
     if (!activeListId) {
       return null;
@@ -242,32 +241,17 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     }
   };
 
-  const addListMemberByEmail = async (
-    email: string
-  ): Promise<{
-    subject: string;
-    body: string;
-  } | null> => {
+  const addListMemberByEmail = async (email: string): Promise<boolean> => {
     if (!activeListId || !activeList) {
-      throw new Error('No active list selected.');
+      console.log('No active list selected.');
+      return false;
     }
-
-    // The data layer now handles all the complex database logic.
-    const invitationWasCreated = await manageListMembershipByEmail(activeListId, activeList, email);
-
-    if (invitationWasCreated) {
-      // If an invitation was created, generate the email content for the UI.
-      const appUrl = window.location.origin;
-      const joinLink = `${appUrl}/list/${activeListId}`;
-
-      const subject = `הזמנה להצטרף לרשומה "${activeList.name}" ב-Shop Smart`;
-      const body = joinLink;
-
-      return { subject, body };
+    try {
+      return await manageListMembershipByEmail(activeListId, activeList, email);
+    } catch (error) {
+      console.error('Error adding list member by email:', error);
+      return false;
     }
-
-    // If the user was added directly, no email is needed.
-    return null;
   };
 
   return (
@@ -291,7 +275,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
         deleteList,
         deleteItem,
         updateItemQuantity,
-        addListMemberByEmail
+        addListMemberByEmail,
       }}
     >
       {children}
