@@ -12,8 +12,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 export default function App() {
   const { setNotification } = useContext(ShopSmartContext);
-  const { lang, user, isAuthLoading, t } = useContext(UserContext);
-  const { activeListId } = useContext(ShopSmartContext);
+  const { lang, user, isAuthLoading, t } = useContext(UserContext); 
   useFirebaseNotifications();
   useEffect(() => {
     document.documentElement.dir = lang === Language.HE ? 'rtl' : 'ltr';
