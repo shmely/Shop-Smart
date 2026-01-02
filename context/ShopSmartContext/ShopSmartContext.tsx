@@ -258,7 +258,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     if (invitationWasCreated) {
       // If an invitation was created, generate the email content for the UI.
       const appUrl = window.location.origin;
-      const joinLink = `${appUrl}/join?listId=${activeListId}`;
+      const joinLink = `${appUrl}/list/${activeListId}`;
 
       const subject = `הזמנה להצטרף לרשומה "${activeList.name}" ב-Shop Smart`;
       const body = joinLink;
