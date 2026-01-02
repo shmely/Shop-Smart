@@ -16,7 +16,7 @@ const phoneRegex = /^\+\d{12,13}$/;
 
 export default function ShareListModal({ setIsOpen }: Props) {
   const { t } = useContext(UserContext);
-  const { addListMemberByEmail } = useContext(ShopSmartContext);
+  const { addListMemberByEmail, activeList } = useContext(ShopSmartContext);
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -27,7 +27,6 @@ export default function ShareListModal({ setIsOpen }: Props) {
   const [disableSendEmail, setDisableSendEmail] = useState(true);
   const [disableSendWhatsApp, setDisableSendWhatsApp] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
-
 
   useEffect(() => {
     const isValidEmail = emailRegex.test(email.trim());
@@ -59,25 +58,22 @@ export default function ShareListModal({ setIsOpen }: Props) {
       return;
     }
     setIsLoading(true);
-
+    const appUrl = window.location.origin;
+    const joinLink = `${appUrl}/list/${activeList.id}`;
+    const message = `הזמנה להצטרף לרשימה "${activeList?.name}" ב-Shop Smart`;
     try {
-      const result = await addListMemberByEmail(email);
-      if (result) {
-        return  {
-          subject: result.subject || 'הצטרף לקרשימת הקניות המשפחתית!',
-          body: result.body || 'שלום! הצטרף לרשימת הקניות המשפחתית שלנו ב-ShopSmart: [קישור הזמנה כאן]',
-        };
-      } else {
-        setError('שגיאה בהזמנת המשתמש, נסה שוב.');
-        return null;
-      }
+      await addListMemberByEmail(email);
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message);
+        console.log('Error adding member by email:', err);
         return null;
       }
     } finally {
       setIsLoading(false);
+      return {
+        subject: message,
+        body: joinLink,
+      };
     }
   };
 
