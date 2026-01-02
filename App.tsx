@@ -8,6 +8,7 @@ import SingleListView from './components/SingleListView/SingleListView';
 import { NotificationToast } from './components/NotificationToast';
 import { UserContext } from './context/UserContext';
 import useFirebaseNotifications from '.';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 export default function App() {
   const { setNotification } = useContext(ShopSmartContext);
@@ -29,8 +30,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {!user ? <Login /> : !activeListId ? <ListOfLists /> : <SingleListView />}
-      <NotificationToast onDismiss={() => setNotification(null)} />
+      <BrowserRouter>
+        <Routes>
+          {/* If no user, everything redirects to Login */}
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+
+          {/* Main Dashboard */}
+          <Route path="/" element={user ? <ListOfLists /> : <Navigate to="/login" />} />
+
+          {/* View a specific list - this works for shared links too! */}
+          <Route path="/list/:listId" element={user ? <SingleListView /> : <Navigate to="/login" />} />
+        </Routes>
+        <NotificationToast onDismiss={() => setNotification(null)} />
+      </BrowserRouter>
     </div>
   );
 }

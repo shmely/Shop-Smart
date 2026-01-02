@@ -3,10 +3,12 @@ import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 import { UserContext } from '@/context/UserContext';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ListOfLists() {
   const { user, t } = useContext(UserContext);
   const { createNewList, deleteList, updateActiveList, lists } = useContext(ShopSmartContext);
+  const navigate = useNavigate();
 
   const [showCreateList, setShowCreateList] = useState(false);
   const [newListName, setNewListName] = useState('');
@@ -31,7 +33,7 @@ export default function ListOfLists() {
           {lists.map((list) => (
             <div className="w-full flex" key={list.id}>
               <div className="bg-white w-full p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
-                <button className="flex items-center justify-between w-full" onClick={() => updateActiveList(list.id)}>
+                <button className="flex items-center justify-between w-full" onClick={() => navigate(`/list/${list.id}`)}>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl">
                       {list.name.toLocaleLowerCase().includes('grocery') || list.name.toLocaleLowerCase().includes('סופר') ? '🛒' : '⛺'}

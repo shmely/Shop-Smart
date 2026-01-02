@@ -224,3 +224,22 @@ export const updateProductCacheCategory = async (
     const docRef = doc(getProductCacheCollectionRef(listId), productId);
     await updateDoc(docRef, { groupId: newGroupId });
 };
+
+export const checkAndProcessJoin = async (listId: string, userEmail: string, userId: string): Promise<void> => {
+    const listRef = getListRef(listId);
+    const listSnap = await getDoc(listRef);
+
+    if (listSnap.exists()) {
+        const data = listSnap.data();
+        const normalizedEmail = userEmail.toLowerCase().trim();
+
+        // If the user is in the pending list, move them to members
+        if (data.pendingInvites?.includes(normalizedEmail)) {
+            await updateDoc(listRef, {
+                members: arrayUnion(userId),
+                pendingInvites: arrayRemove(normalizedEmail),
+            });
+            console.log("Data Layer: User moved from pending to members.");
+        }
+    }
+};

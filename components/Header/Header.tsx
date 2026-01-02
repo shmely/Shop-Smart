@@ -28,6 +28,7 @@ export default function Header() {
   };
 
   const getInitials = (name: string) => {
+    if (!name) return 'AY';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -55,7 +56,7 @@ export default function Header() {
 
         <div>
           <h2 className="font-bold text-gray-800 text-lg">
-            {t.welcome}, {user.displayName.split(' ')[0]}
+            {t.welcome}, {user?.displayName?.split(' ')?.[0] ?? 'AY'}
           </h2>
         </div>
       </div>
