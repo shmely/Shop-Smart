@@ -86,6 +86,7 @@ export const TRANSLATIONS = {
     subject: 'נושא',
     body: 'גוף (קישור)',
     notification_added_item: 'הוסיף פריט ל',
+    share_specific_list: 'שתף רשימה',
   },
   [Language.EN]: {
     app_name: 'ShopSmart',
@@ -147,5 +148,6 @@ export const TRANSLATIONS = {
     subject: 'Subject',
     body: 'Body (Link)',
     notification_added_item: 'added an item to the list',
+    share_specific_list: 'Share List',
   }
 };

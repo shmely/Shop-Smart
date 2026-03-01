@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useItems } from './hooks/useItems';
 import { useAutocomplete } from './hooks/useAutocomplete';
 import { PlusIcon } from '@/configuration/icons';

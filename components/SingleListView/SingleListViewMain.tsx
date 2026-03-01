@@ -12,8 +12,7 @@ import { useSettingsModal } from './modal/settings-modal/useSettingsModal';
 import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
 
 export default function SingleListViewMain() {
-  const { t, groupedItems, collapsedDoneItems, setCollapsedDoneItems, doneGroups, doneItemsCount } =
-    useSingleListViewMain();
+  const { t, groupedItems, collapsedDoneItems, setCollapsedDoneItems, doneItemsCount } = useSingleListViewMain();
   const { deleteAllDoneItems, activeListId } = useContext(ShopSmartContext);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const {
@@ -58,7 +57,7 @@ export default function SingleListViewMain() {
               <span className="text-gray-700 text-xl ">{t.done_items}</span>
               <div className="flex text-gray-500 justify-between align-center w-full ">
                 <button
-                   onClick={() => setIsDeleteConfirmOpen(true)}
+                  onClick={() => setIsDeleteConfirmOpen(true)}
                   className="text-gray-600 hover:text-red-500 transition-colors"
                 >
                   <DeleteSweepOutlinedIcon fontSize="large" />
@@ -68,8 +67,8 @@ export default function SingleListViewMain() {
                   {doneItemsCount === 1
                     ? `${t.item} ${t.one}`
                     : doneItemsCount > 1
-                    ? `${doneItemsCount} ${t.items}`
-                    : ''}
+                      ? `${doneItemsCount} ${t.items}`
+                      : ''}
                 </span>
                 {doneItemsCount > 0 && (
                   <div className="flex">

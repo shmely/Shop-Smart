@@ -1,11 +1,14 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import UserDropdown from './UserDropdown';
 import { UserContext } from '@/context/UserContext';
+import { ShareIcon } from '@/configuration/icons';
+import ShareModal from '../SingleListView/modal/ShareModal';
 
 export default function Header() {
   const { user, t } = useContext(UserContext);
   const [imageError, setImageError] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [shareList, setShareList] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -41,9 +44,18 @@ export default function Header() {
     <header className="bg-white shadow-sm p-4 top-0 z-10 flex justify-between items-center">
       <div className="flex items-center gap-3">
         <div className="relative" ref={dropdownRef}>
-          <div className="cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setShowDropdown(!showDropdown)}>
+          <div
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
             {!imageError && user.photoURL ? (
-              <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full border-2 border-emerald-500" onError={handleImageError} referrerPolicy="no-referrer" />
+              <img
+                src={user.photoURL}
+                alt="Profile"
+                className="w-10 h-10 rounded-full border-2 border-emerald-500"
+                onError={handleImageError}
+                referrerPolicy="no-referrer"
+              />
             ) : (
               <div className="w-10 h-10 rounded-full border-2 border-emerald-500 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
                 {getInitials(user.displayName)}
@@ -51,7 +63,12 @@ export default function Header() {
             )}
           </div>
 
-          <UserDropdown showDropdown={showDropdown} setShowDropdown={setShowDropdown} imageError={imageError} getInitials={getInitials} />
+          <UserDropdown
+            showDropdown={showDropdown}
+            setShowDropdown={setShowDropdown}
+            imageError={imageError}
+            getInitials={getInitials}
+          />
         </div>
 
         <div>
@@ -60,6 +77,10 @@ export default function Header() {
           </h2>
         </div>
       </div>
+      <button onClick={() => setShareList(true)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-full">
+        <ShareIcon />
+      </button>
+      {shareList && <ShareModal setIsOpen={setShareList} />}
     </header>
   );
 }

@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, ShareIcon } from '@/configuration/icons';
+import { ArrowLeftIcon } from '@/configuration/icons';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { useContext, useState } from 'react';
-import ShareListModal from './modal/ShareListModal';
+import { useContext } from 'react';
 import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 
 interface Props {
@@ -11,7 +10,7 @@ interface Props {
 
 export default function SingleListViewHeader({ onOpenSettings }: Props) {
   const { activeList, updateActiveList } = useContext(ShopSmartContext);
-  const [shareList, setShareList] = useState<boolean>(false);
+  
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -29,15 +28,11 @@ export default function SingleListViewHeader({ onOpenSettings }: Props) {
         </button>
         <h1 className="text-lg font-bold text-gray-800 truncate flex-1 text-center mx-2">{activeList?.name}</h1>
         <div className="flex gap-2">
-          <button onClick={() => setShareList(true)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-full">
-            <ShareIcon />
-          </button>
           <button onClick={onOpenSettings} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
             <SettingsIcon />
           </button>
         </div>
       </div>
-      {shareList && <ShareListModal setIsOpen={setShareList} />}
     </header>
   );
 }

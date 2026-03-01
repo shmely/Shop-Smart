@@ -30,8 +30,10 @@ function useFirebaseNotifications() {
               if (installingWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
                   console.log('New content is available; please refresh.');
-                  // Optional: Force a reload
-                  // window.location.reload();
+                  installingWorker.postMessage({ type: 'SKIP_WAITING' });
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 500);
                 }
               }
             };
