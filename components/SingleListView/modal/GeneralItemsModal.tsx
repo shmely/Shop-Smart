@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from 'react';
+import { Group, GroupedItem, ProductCacheItem, ListItem as ShoppingListItem } from '@/common/model/types';
 import {
   Dialog,
   DialogTitle,
@@ -13,69 +14,102 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-} from "@mui/material";
-import { FirebaseProductCacheService } from "@/services/firebaseProductCacheService";
-import { ProductCacheItem } from "@/common/model/types";
+} from '@mui/material';
+import { FirebaseProductCacheService } from '@/services/firebaseProductCacheService';
+import { DEFAULT_GROUPS } from '@/configuration/constants';
+import SingleListViewGroupHeader from '../SingleListViewGroupHeader';
+import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onUpdate: (items: { [productId: string]: { checked: boolean; quantity: number } }) => void;
-  currentListItems: { [productId: string]: { quantity: number } };
 }
 
-export default function GeneralItemsModal({
-  open,
-  onClose,
-  onUpdate,
-  currentListItems,
-}: Props) {
-  const [items, setItems] = useState<ProductCacheItem[]>([]);
-  const [checkedState, setCheckedState] = useState<{ [id: string]: boolean }>({});
-  const [quantities, setQuantities] = useState<{ [id: string]: number }>({});
+type AllItems = {
+  group: Group;
+  items: ShoppingListItem[];
+};
 
-  // Load items from firebase cache on open
+export default function GeneralItemsModal({ open, onClose, onUpdate }: Props) {
+  const { addItemToList, activeListId, activeList } = useContext(ShopSmartContext);
+  const [groupedAllItems, setGroupedAllItems] = useState<AllItems[]>([]);
+  //const [checkedState, setCheckedState] = useState<{ [id: string]: boolean }>({});
+  //const [quantities, setQuantities] = useState<{ [id: string]: number }>({});
+  const [currentItems, setCurrentItems] = useState<{ [id: string]: GroupedItem['items'][0] }>({});
   useEffect(() => {
     if (!open) return;
-    // Get all items from the active cache
-    const cache = FirebaseProductCacheService["getActiveCache"]?.();
+    const cache = FirebaseProductCacheService['getActiveCache']?.();
     if (cache) {
       const arr = Array.from(cache.values());
-      setItems(arr);
-      // Set checked and quantities from current list
-      const checked: { [id: string]: boolean } = {};
-      const qty: { [id: string]: number } = {};
-      arr.forEach((item) => {
-        checked[item.id] = !!currentListItems[item.id];
-        qty[item.id] = currentListItems[item.id]?.quantity || 1;
-      });
-      setCheckedState(checked);
-      setQuantities(qty);
+      const groupedCacheItems = groupProductCacheItemsByGroup(arr, DEFAULT_GROUPS);
+      setGroupedAllItems(groupedCacheItems);
+      setCurrentItems(flattenGroupedItemsToDict(activeList.items));
+      //setIncludeItems(groupedCacheItems, currentItems);
     }
-  }, [open, currentListItems]);
+  }, [open, activeList]);
 
-  const handleCheck = (id: string) => {
-    setCheckedState((prev) => ({
-      ...prev,
-      [id]: !prev[id],
+  function flattenGroupedItemsToDict(ShoppingListItem: ShoppingListItem[]): { [id: string]: ShoppingListItem } {
+    return ShoppingListItem.map((item) => item).reduce(
+      (acc, item) => {
+        acc[item.name] = item;
+        return acc;
+      },
+      {} as { [id: string]: ShoppingListItem }
+    );
+  }
+
+  // function setIncludeItems(
+  //   groupedCacheItems: GroupedProductCacheItem[],
+  //   currentItems: { [id: string]: GroupedItem['items'][0] }
+  // ) {
+  //   const checked: { [id: string]: boolean } = {};
+  //   const qty: { [id: string]: number } = {};
+  //   groupedCacheItems.forEach((groupItem) => {
+  //     groupItem.productCacheItem.forEach((item) => {
+  //       checked[item.id] = !!currentItems[item.name];
+  //       qty[item.id] = currentItems[item.name]?.quantity || 1;
+  //     });
+  //   });
+  //   setCheckedState(checked);
+  //   setQuantities(qty);
+  // }
+
+  function groupProductCacheItemsByGroup(items: ProductCacheItem[], groups: Group[]): AllItems[] {
+    return groups.map((group) => ({
+      group,
+      items: items
+        .filter((item) => item.groupId === group.id)
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          groupId: item.groupId,
+          isChecked: currentItems[item.name] ? true : false,
+          addedBy: '',
+          timestamp: item.addedAt,
+          quantity: currentItems[item.name]?.quantity || 1,
+        })),
     }));
-  };
+  }
+  const handleCheck = (id: string) => {};
 
   const handleQuantityChange = (id: string, value: string) => {
     const num = Math.max(1, parseInt(value) || 1);
-    setQuantities((prev) => ({
-      ...prev,
-      [id]: num,
-    }));
+    // setQuantities((prev) => ({
+    //   ...prev,
+    //   [id]: num,
+    // }));
   };
 
   const handleUpdate = () => {
     // Only send checked items with their quantities
     const result: { [productId: string]: { checked: boolean; quantity: number } } = {};
-    items.forEach((item) => {
-      if (checkedState[item.id]) {
-        result[item.id] = { checked: true, quantity: quantities[item.id] || 1 };
-      }
+    groupedAllItems.forEach((group) => {
+      group.productCacheItem.forEach((item) => {
+        // if (checkedState[item.id]) {
+        //   result[item.id] = { checked: true, quantity: quantities[item.id] || 1 };
+        // }
+      });
     });
     onUpdate(result);
     onClose();
@@ -89,35 +123,44 @@ export default function GeneralItemsModal({
           סמן את הפריטים הרלוונטיים ועדכן כמויות. הפריטים מסונכרנים מההיסטוריה שלך.
         </Typography>
         <List>
-          {items.length === 0 && (
+          {groupedAllItems.length === 0 && (
             <Typography color="textSecondary" align="center">
               אין פריטים כלליים להצגה.
             </Typography>
           )}
-          {items.map((item) => (
-            <ListItem key={item.id} dense>
-              <ListItemIcon>
-                <Checkbox
-                  edge="start"
-                  checked={!!checkedState[item.id]}
-                  onChange={() => handleCheck(item.id)}
-                  tabIndex={-1}
-                  disableRipple
-                />
-              </ListItemIcon>
-              <ListItemText primary={item.name} />
-              <Box sx={{ minWidth: 80 }}>
-                <TextField
-                  type="number"
-                  size="small"
-                  label="כמות"
-                  value={quantities[item.id] || 1}
-                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                  disabled={!checkedState[item.id]}
-                  inputProps={{ min: 1, style: { width: 50 } }}
-                />
-              </Box>
-            </ListItem>
+          {groupedAllItems.flatMap((groupItems) => (
+            <div key={groupItems.group.id} className="mb-2 bg-white rounded-2xl shadow-sm border border-gray-100">
+              <SingleListViewGroupHeader group={groupItems.group} itemsCount={groupItems.items.length} />
+              <List>
+                {groupItems.items.map((item) => (
+                  <ListItem key={item.id} dense sx={{ textAlign: 'right' }}>
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        checked={currentItems[item.id] ? true : false}
+                        onChange={() => handleCheck(item.name)}
+                        tabIndex={-1}
+                        disableRipple
+                      />
+                    </ListItemIcon>
+                    <span className="text-2xl">{groupItems.group.code}</span>
+                    <ListItemText primary={item.name} />
+                    <Box sx={{ minWidth: 80 }}>
+                      <TextField
+                        type="number"
+                        size="small"
+                        label="כמות"
+                        value={1}
+                        //value={quantities[item.id] || 1}
+                        onChange={(e) => handleQuantityChange(item.name, e.target.value)}
+                        //disabled={!checkedState[item.id]}
+                        inputProps={{ min: 1, style: { width: 50 } }}
+                      />
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            </div>
           ))}
         </List>
       </DialogContent>

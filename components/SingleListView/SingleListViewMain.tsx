@@ -33,7 +33,7 @@ export default function SingleListViewMain() {
 
   return (
     <>
-      <SingleListViewHeader onOpenSettings={handleOpenSettings} />
+      <SingleListViewHeader onOpenSettings={handleOpenSettings} GroupedItems={groupedItems} />
       <main className="flex-1 p-4 pb-60 overflow-auto">
         {groupedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-400">

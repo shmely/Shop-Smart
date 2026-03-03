@@ -44,7 +44,7 @@ export default function SettingsModal({ onClose, onSave, onDragEnd, editingGroup
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={editingGroups} strategy={verticalListSortingStrategy}>
               {editingGroups.map((group) => (
-                <SortableCategoryItem key={group.id} group={group} />
+                <SortableCategoryItem group={group} />
               ))}
             </SortableContext>
           </DndContext>

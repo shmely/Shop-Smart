@@ -1,3 +1,4 @@
+import React from "react";
 import { GroupId, ListItem, ShoppingList, User, Notification, Group } from "@/common/model/types";
 
 export type ShopSmartContextType = {

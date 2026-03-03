@@ -1,13 +1,16 @@
 import { useMemo, useState, useContext } from "react"; // useRef is new
 import { UserContext } from "@/context/UserContext";
 import { ShopSmartContext } from "@/context/ShopSmartContext/ShopSmartContext";
+import { GroupedItem } from "@/common/model/types";
+
+
 
 export function useSingleListViewMain() {
   const { t } = useContext(UserContext);
   const { sortedGroups, activeList } = useContext(ShopSmartContext);
   const [collapsedDoneItems, setCollapsedDoneItems] = useState(true);
 
-  const groupedItems = useMemo(() => {
+  const groupedItems: GroupedItem[] = useMemo(() => {
     if (!activeList?.items) return [];
     return sortedGroups.map((group) => ({
       group,

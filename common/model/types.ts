@@ -9,6 +9,11 @@ export enum NotificationType {
   ERROR = 'error',
 }
 
+export type GroupedItem = {
+  group: Group;
+  items: ListItem[];
+};
+
 export enum GroupId {
   FRUITS_VEG = 'fruits_veg',
   DAIRY = 'dairy',
@@ -50,6 +55,7 @@ export interface ShoppingList {
   customGroupOrder?: { [key in GroupId]?: number }; // Allow users to override default order
   pendingInvites?: string[]; 
 }
+
 
 
 export interface User {

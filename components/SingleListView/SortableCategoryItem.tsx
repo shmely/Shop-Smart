@@ -19,7 +19,13 @@ export function SortableCategoryItem({ group }: Props) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="flex items-center gap-4 p-3 bg-white border rounded-lg shadow-sm">
+    <div
+      key={group.id}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="flex items-center gap-4 p-3 bg-white border rounded-lg shadow-sm"
+    >
       <div {...listeners} className="cursor-grab active:cursor-grabbing touch-none p-1">
         <DragIndicatorIcon />
       </div>

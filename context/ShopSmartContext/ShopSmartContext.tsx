@@ -25,7 +25,7 @@ interface ShopSmartProviderProps {
 }
 
 export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
-  const { user, t } = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const [notification, setNotification] = useState<Notification | null>(null);
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(localStorage.getItem(STORAGE_KEYS.ACTIVE_LIST_ID));

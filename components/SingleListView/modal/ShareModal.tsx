@@ -45,10 +45,7 @@ export default function ShareModal({ setIsOpen }: Props) {
   const [phoneError, setPhoneError] = useState('');
 
   // Derived
-  const ownedLists = useMemo(
-    () => lists.filter((l) => user && l.ownerId === user.uid),
-    [lists, user]
-  );
+  const ownedLists = useMemo(() => lists.filter((l) => user && l.ownerId === user.uid), [lists, user]);
 
   const isEmailValid = emailRegex.test(email.trim());
   const isPhoneValid = phoneRegex.test(phone.replace(/\s/g, ''));
@@ -120,7 +117,6 @@ export default function ShareModal({ setIsOpen }: Props) {
       const ok = await handleAddMemberByEmail();
       if (!ok) return;
     }
-    // If not sharing specific, email can be empty (mailto will open with no recipient)
     const mailto = `https://mail.google.com/mail/?view=cm&fs=1&to=${shareSpecific ? encodeURIComponent(email) : ''}&su=${encodeURIComponent(message)}&body=${encodeURIComponent(link)}`;
     window.open(mailto, '_blank');
     setIsOpen(false);
@@ -149,42 +145,29 @@ export default function ShareModal({ setIsOpen }: Props) {
 
   // --- Button enable/disable logic ---
   // Email: enabled if (not sharing specific) OR (sharing specific AND list selected AND email valid AND not loading)
-  const isEmailButtonDisabled =
-    isLoading ||
-    (shareSpecific && (!selectedListId || !isEmailValid));
+  const isEmailButtonDisabled = isLoading || (shareSpecific && (!selectedListId || !isEmailValid));
 
   // WhatsApp: enabled if (not sharing specific) OR (sharing specific AND list selected AND email valid AND not loading)
   // (for WhatsApp, we require email valid for member invite, as per your logic)
-  const isWhatsAppButtonDisabled =
-    isLoading ||
-    (shareSpecific && (!selectedListId || !isEmailValid));
+  const isWhatsAppButtonDisabled = isLoading || (shareSpecific && (!selectedListId || !isEmailValid));
 
   // Send icon for WhatsApp phone input: enabled if phone valid and not loading
   const isSendPhoneButtonDisabled = isLoading || !isPhoneValid;
 
-  // --- Render ---
   return (
     <Dialog open={true} onClose={() => setIsOpen(false)} fullWidth>
-      <DialogTitle>{t.share}</DialogTitle>
-      <DialogContent>
-        {/* Share specific list checkbox */}
+      <DialogTitle sx={{ padding: '16px 30px' }}>{t.share}</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
         <FormControlLabel
-          control={
-            <Checkbox
-              checked={shareSpecific}
-              onChange={handleCheckboxChange}
-            />
-          }
+          control={<Checkbox checked={shareSpecific} onChange={handleCheckboxChange} />}
           label={t.share_specific_list || 'Share specific list'}
+          sx={{ margin: 0 }}
         />
 
         {/* List selection, disabled unless checkbox checked */}
-        <FormControl component="fieldset" sx={{ mt: 2, mb: 2 }}>
+        <FormControl component="fieldset" sx={{ mt: 2, mb: 2, margin: 0, padding: '9px' }}>
           <FormLabel component="legend">{t.select_list || 'Select a list'}</FormLabel>
-          <RadioGroup
-            value={selectedListId}
-            onChange={handleListChange}
-          >
+          <RadioGroup value={selectedListId} onChange={handleListChange}>
             {ownedLists.map((list) => (
               <FormControlLabel
                 key={list.id}
@@ -197,7 +180,6 @@ export default function ShareModal({ setIsOpen }: Props) {
           </RadioGroup>
         </FormControl>
 
-        {/* Email input only for specific list */}
         {shareSpecific && (
           <TextField
             autoFocus
@@ -214,17 +196,13 @@ export default function ShareModal({ setIsOpen }: Props) {
             disabled={isLoading}
           />
         )}
-
-        {/* Share buttons */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
           <IconButton
             disabled={isEmailButtonDisabled}
             onClick={handleShareEmail}
             title={t.send_email}
             sx={{
-              color: isEmailButtonDisabled
-                ? (theme) => theme.palette.action.disabled
-                : '#EA4335',
+              color: isEmailButtonDisabled ? (theme) => theme.palette.action.disabled : '#EA4335',
             }}
           >
             <EmailIcon />
@@ -234,16 +212,12 @@ export default function ShareModal({ setIsOpen }: Props) {
             onClick={handleShareWhatsApp}
             title={t.send_whatsapp}
             sx={{
-              color: isWhatsAppButtonDisabled
-                ? (theme) => theme.palette.action.disabled
-                : '#25D366',
+              color: isWhatsAppButtonDisabled ? (theme) => theme.palette.action.disabled : '#25D366',
             }}
           >
             <WhatsAppIcon />
           </IconButton>
         </Box>
-
-        {/* Phone input for WhatsApp */}
         {showPhoneInput && (
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
             <MuiTelInput
@@ -261,9 +235,7 @@ export default function ShareModal({ setIsOpen }: Props) {
               onClick={handleShareWhatsApp}
               title={t.send_whatsapp}
               sx={{
-                color: isSendPhoneButtonDisabled
-                  ? (theme) => theme.palette.action.disabled
-                  : '#25D366',
+                color: isSendPhoneButtonDisabled ? (theme) => theme.palette.action.disabled : '#25D366',
               }}
             >
               <SendIcon className="-scale-x-100" />
