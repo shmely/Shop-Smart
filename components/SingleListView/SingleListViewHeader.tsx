@@ -26,21 +26,9 @@ export default function SingleListViewHeader({ onOpenSettings, GroupedItems }: P
     navigate('/');
   };
 
-  const handleUpdateGeneralItems = (selectedItems) => {
-    // selectedItems: { [productId]: { checked: boolean, quantity: number } }
-    // Update your list with these items and quantities
-    // You may want to call a context or prop function here
-    // Example:
-    // props.onUpdateListItems(selectedItems);
-  };
-
   return (
     <header className="bg-white shadow-sm top-0 z-10 relative">
-      <GeneralItemsModal
-        open={showGeneralModal}
-        onClose={() => setShowGeneralModal(false)}
-        onUpdate={handleUpdateGeneralItems}
-      />
+      <GeneralItemsModal open={showGeneralModal} onClose={() => setShowGeneralModal(false)} />
       <div className="flex items-center justify-between p-4">
         <IconButton onClick={handleBack} className="p-2 -ml-2 rtl:-mr-2 text-gray-600 hover:bg-gray-100 rounded-full">
           <ArrowLeftIcon />
@@ -49,7 +37,7 @@ export default function SingleListViewHeader({ onOpenSettings, GroupedItems }: P
         <div className="flex gap-2">
           <IconButton
             title="הוסף פריטים כלליים"
-            onClick={() => setShowGeneralModal(true)}
+            onClick={() => setShowGeneralModal(true)} //temporray disabled till we fix it!
             className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
           >
             <ChecklistRtlIcon />

@@ -1,5 +1,5 @@
 import { Language, User } from '../common/model/types';
-import { createContext, useState, useEffect, ReactNode, useMemo, useContext } from 'react';
+import { createContext, useState, useEffect, ReactNode, useMemo, useContext, Dispatch, SetStateAction } from 'react';
 import { auth } from '../firebase';
 import { TRANSLATIONS, STORAGE_KEYS } from '@/configuration/constants';
 import { getUserData, listenToAuthChanges, updateUserData } from '@/data-layer/firebase-layer';
@@ -7,10 +7,10 @@ import { requestPermissionAndGetToken, saveTokenToFirestore } from '@/data-layer
 
 type UserContextType = {
   user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setUser: Dispatch<SetStateAction<User | null>>;
   isAuthLoading: boolean;
   lang: Language;
-  setLang: React.Dispatch<React.SetStateAction<Language>>;
+  setLang: Dispatch<SetStateAction<Language>>;
   t: any;
 };
 

@@ -19,102 +19,111 @@ import { FirebaseProductCacheService } from '@/services/firebaseProductCacheServ
 import { DEFAULT_GROUPS } from '@/configuration/constants';
 import SingleListViewGroupHeader from '../SingleListViewGroupHeader';
 import { ShopSmartContext } from '@/context/ShopSmartContext/ShopSmartContext';
+import { UserContext } from '@/context/UserContext';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onUpdate: (items: { [productId: string]: { checked: boolean; quantity: number } }) => void;
 }
 
 type AllItems = {
   group: Group;
-  items: ShoppingListItem[];
+  items: ProductCacheItem[];
 };
 
-export default function GeneralItemsModal({ open, onClose, onUpdate }: Props) {
-  const { addItemToList, activeListId, activeList } = useContext(ShopSmartContext);
-  const [groupedAllItems, setGroupedAllItems] = useState<AllItems[]>([]);
-  //const [checkedState, setCheckedState] = useState<{ [id: string]: boolean }>({});
-  //const [quantities, setQuantities] = useState<{ [id: string]: number }>({});
-  const [currentItems, setCurrentItems] = useState<{ [id: string]: GroupedItem['items'][0] }>({});
+export default function GeneralItemsModal({ open, onClose }: Props) {
+  const { addItemToList, activeListId, activeList, updateItemQuantity, deleteItem } = useContext(ShopSmartContext);
+  const { user } = useContext(UserContext);
+  const [allItems, setAllItems] = useState<AllItems[]>(null);
+  const [existsItems, setExistsItems] =
+    useState<Record<string, { checked: boolean; quantity: number; groupId: string }>>(null);
   useEffect(() => {
     if (!open) return;
-    const cache = FirebaseProductCacheService['getActiveCache']?.();
+    const cache = FirebaseProductCacheService['getActiveCache']?.().values();
     if (cache) {
-      const arr = Array.from(cache.values());
-      const groupedCacheItems = groupProductCacheItemsByGroup(arr, DEFAULT_GROUPS);
-      setGroupedAllItems(groupedCacheItems);
-      setCurrentItems(flattenGroupedItemsToDict(activeList.items));
-      //setIncludeItems(groupedCacheItems, currentItems);
+      const arr = Array.from(cache);
+      const groupedItems = DEFAULT_GROUPS.map((group) => ({
+        group,
+        items: arr.filter((item) => item.groupId === group.id),
+      }));
+      setAllItems(groupedItems);
     }
-  }, [open, activeList]);
+  }, [open]);
 
-  function flattenGroupedItemsToDict(ShoppingListItem: ShoppingListItem[]): { [id: string]: ShoppingListItem } {
+  useEffect(() => {
+    if (!open) return;
+    if (!allItems || !activeList?.items) return;
+    const existingItems = {} as Record<string, { checked: boolean; quantity: number; groupId: string }>;
+    const flattenedListIDic = flattenGroupedItemsToDict(activeList.items);
+    const flattenedCacheItems = allItems ? allItems.flatMap((group) => group.items) : [];
+
+    flattenedCacheItems.forEach((item) => {
+      if (flattenedListIDic[item.name]) {
+        existingItems[item.name] = {
+          checked: true,
+          quantity: flattenedListIDic[item.name].quantity,
+          groupId: flattenedListIDic[item.name].groupId,
+        };
+      }
+    });
+    setExistsItems(existingItems);
+  }, [allItems, open, activeList]);
+
+  function flattenGroupedItemsToDict(ShoppingListItem: ShoppingListItem[]): Record<string, ShoppingListItem> {
     return ShoppingListItem.map((item) => item).reduce(
       (acc, item) => {
         acc[item.name] = item;
         return acc;
       },
-      {} as { [id: string]: ShoppingListItem }
+      {} as Record<string, ShoppingListItem>
     );
   }
 
-  // function setIncludeItems(
-  //   groupedCacheItems: GroupedProductCacheItem[],
-  //   currentItems: { [id: string]: GroupedItem['items'][0] }
-  // ) {
-  //   const checked: { [id: string]: boolean } = {};
-  //   const qty: { [id: string]: number } = {};
-  //   groupedCacheItems.forEach((groupItem) => {
-  //     groupItem.productCacheItem.forEach((item) => {
-  //       checked[item.id] = !!currentItems[item.name];
-  //       qty[item.id] = currentItems[item.name]?.quantity || 1;
-  //     });
-  //   });
-  //   setCheckedState(checked);
-  //   setQuantities(qty);
-  // }
-
-  function groupProductCacheItemsByGroup(items: ProductCacheItem[], groups: Group[]): AllItems[] {
-    return groups.map((group) => ({
-      group,
-      items: items
-        .filter((item) => item.groupId === group.id)
-        .map((item) => ({
-          id: item.id,
-          name: item.name,
-          groupId: item.groupId,
-          isChecked: currentItems[item.name] ? true : false,
-          addedBy: '',
-          timestamp: item.addedAt,
-          quantity: currentItems[item.name]?.quantity || 1,
-        })),
-    }));
-  }
-  const handleCheck = (id: string) => {};
-
-  const handleQuantityChange = (id: string, value: string) => {
-    const num = Math.max(1, parseInt(value) || 1);
-    // setQuantities((prev) => ({
-    //   ...prev,
-    //   [id]: num,
-    // }));
-  };
-
   const handleUpdate = () => {
-    // Only send checked items with their quantities
-    const result: { [productId: string]: { checked: boolean; quantity: number } } = {};
-    groupedAllItems.forEach((group) => {
-      group.productCacheItem.forEach((item) => {
-        // if (checkedState[item.id]) {
-        //   result[item.id] = { checked: true, quantity: quantities[item.id] || 1 };
-        // }
-      });
+    existsItems.forEach((value, name) => {
+      const existsItem = activeList?.items.find((item) => item.name === name);
+      if (existsItem && !value.checked) {
+        deleteItem(activeListId!, existsItem.id);
+      }
+      if (existsItem && value.quantity !== existsItem.quantity) {
+        updateItemQuantity(activeListId!, existsItem.id, value.quantity);
+      }
+      if (!existsItem) {
+        const timeStamp = Date.now().toString();
+        addItemToList(activeListId!, {
+          id: timeStamp,
+          name,
+          groupId: value.groupId,
+          isChecked: true,
+          addedBy: user.uid,
+          timestamp: timeStamp,
+          quantity: value.quantity,
+        });
+      }
     });
-    onUpdate(result);
     onClose();
   };
 
+  const handleCheck = (item: ProductCacheItem, isChecked: boolean) => {
+    if (isChecked) {
+      setExistsItems((prev) => ({
+        ...prev,
+        [item.name]: { checked: true, quantity: existsItems[item.name]?.quantity || 1, groupId: item.groupId },
+      }));
+    } else {
+      setExistsItems((prev) => ({
+        ...prev,
+        [item.name]: { checked: false, quantity: existsItems[item.name]?.quantity || 1, groupId: item.groupId },
+      }));
+    }
+  };
+
+  const handleQuantityChange = (item: ProductCacheItem, newQuantity: number) => {
+    if (existsItems[item.name]) {
+      existsItems[item.name].quantity = newQuantity;
+    }
+  };
+  if (!allItems || !existsItems) return null;
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>בחר פריטים כלליים לרכישה</DialogTitle>
@@ -123,37 +132,36 @@ export default function GeneralItemsModal({ open, onClose, onUpdate }: Props) {
           סמן את הפריטים הרלוונטיים ועדכן כמויות. הפריטים מסונכרנים מההיסטוריה שלך.
         </Typography>
         <List>
-          {groupedAllItems.length === 0 && (
+          {allItems.length === 0 && (
             <Typography color="textSecondary" align="center">
               אין פריטים כלליים להצגה.
             </Typography>
           )}
-          {groupedAllItems.flatMap((groupItems) => (
-            <div key={groupItems.group.id} className="mb-2 bg-white rounded-2xl shadow-sm border border-gray-100">
-              <SingleListViewGroupHeader group={groupItems.group} itemsCount={groupItems.items.length} />
+          {allItems.map((group) => (
+            <div key={group.group.id} className="mb-2 bg-white rounded-2xl shadow-sm border border-gray-100">
+              <SingleListViewGroupHeader group={group.group} itemsCount={group.items.length} />
               <List>
-                {groupItems.items.map((item) => (
+                {group.items.map((item) => (
                   <ListItem key={item.id} dense sx={{ textAlign: 'right' }}>
                     <ListItemIcon>
                       <Checkbox
                         edge="start"
-                        checked={currentItems[item.id] ? true : false}
-                        onChange={() => handleCheck(item.name)}
+                        checked={existsItems[item.name]?.checked ?? false}
+                        onChange={(e) => handleCheck(item, e.target.checked)}
                         tabIndex={-1}
                         disableRipple
                       />
                     </ListItemIcon>
-                    <span className="text-2xl">{groupItems.group.code}</span>
+                    <span className="text-2xl">{group.code}</span>
                     <ListItemText primary={item.name} />
                     <Box sx={{ minWidth: 80 }}>
                       <TextField
                         type="number"
                         size="small"
                         label="כמות"
-                        value={1}
-                        //value={quantities[item.id] || 1}
-                        onChange={(e) => handleQuantityChange(item.name, e.target.value)}
-                        //disabled={!checkedState[item.id]}
+                        value={existsItems[item.name] ? existsItems[item.name].quantity : 1}
+                        onChange={(e) => handleQuantityChange(item, e.target.value)}
+                        disabled={!existsItems[item.name]}
                         inputProps={{ min: 1, style: { width: 50 } }}
                       />
                     </Box>
@@ -165,9 +173,11 @@ export default function GeneralItemsModal({ open, onClose, onUpdate }: Props) {
         </List>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>ביטול</Button>
+        <Button onClick={onClose} variant="outlined" color="secondary">
+          ביטול
+        </Button>
         <Button onClick={handleUpdate} variant="contained" color="primary">
-          עדכן רשימה
+          עדכון
         </Button>
       </DialogActions>
     </Dialog>
