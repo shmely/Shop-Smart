@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Group, GroupedItem, ProductCacheItem, ListItem as ShoppingListItem } from '@/common/model/types';
+import { Group, ProductCacheItem, ListItem as ShoppingListItem } from '@/common/model/types';
 import {
   Dialog,
   DialogTitle,
@@ -32,11 +32,14 @@ type AllItems = {
 };
 
 export default function GeneralItemsModal({ open, onClose }: Props) {
-  const { addItemToList, activeListId, activeList, updateItemQuantity, deleteItem } = useContext(ShopSmartContext);
+  const { addItemToList, activeListId, activeList, updateItemQuantity, deleteItem, toggleItem } =
+    useContext(ShopSmartContext);
   const { user } = useContext(UserContext);
   const [allItems, setAllItems] = useState<AllItems[]>(null);
-  const [existsItems, setExistsItems] =
-    useState<Record<string, { checked: boolean; quantity: number; groupId: string }>>(null);
+  const [existsItems, setExistsItems] = useState<Record<
+    string,
+    { checked: boolean; quantity: number; groupId: string }
+  > | null>(null);
   useEffect(() => {
     if (!open) return;
     const cache = FirebaseProductCacheService['getActiveCache']?.().values();
@@ -58,7 +61,7 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
     const flattenedCacheItems = allItems ? allItems.flatMap((group) => group.items) : [];
 
     flattenedCacheItems.forEach((item) => {
-      if (flattenedListIDic[item.name]) {
+      if (flattenedListIDic[item.name] && !flattenedListIDic[item.name].isChecked) {
         existingItems[item.name] = {
           checked: true,
           quantity: flattenedListIDic[item.name].quantity,
@@ -80,27 +83,35 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
   }
 
   const handleUpdate = () => {
-    existsItems.forEach((value, name) => {
-      const existsItem = activeList?.items.find((item) => item.name === name);
-      if (existsItem && !value.checked) {
-        deleteItem(activeListId!, existsItem.id);
-      }
-      if (existsItem && value.quantity !== existsItem.quantity) {
-        updateItemQuantity(activeListId!, existsItem.id, value.quantity);
-      }
-      if (!existsItem) {
+    Object.entries(existsItems as Record<string, { checked: boolean; quantity: number; groupId: string }>).forEach(
+      ([name, value]) => {
+        const activeListItem = activeList?.items.find((item) => item.name === name);
+        if (activeListItem) {
+          if (!activeListItem.isChecked && !value.checked) {
+            return;
+          }
+          if (!activeListItem.isChecked && value.checked) {
+            updateItemQuantity(activeListId!, activeListItem.id, value.quantity);
+            return;
+          }
+          if (activeListItem.isChecked && value.checked) {
+            toggleItem(activeListId!, activeListItem);
+            updateItemQuantity(activeListId!, activeListItem.id, value.quantity);
+            return;
+          }
+        }
         const timeStamp = Date.now().toString();
         addItemToList(activeListId!, {
           id: timeStamp,
           name,
           groupId: value.groupId,
-          isChecked: true,
+          isChecked: false,
           addedBy: user.uid,
           timestamp: timeStamp,
           quantity: value.quantity,
         });
       }
-    });
+    );
     onClose();
   };
 
@@ -125,9 +136,18 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
   };
   if (!allItems || !existsItems) return null;
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={(event, reason) => {
+        if (reason !== 'backdropClick') {
+          onClose();
+        }
+      }}
+      fullWidth
+      maxWidth="sm"
+    >
       <DialogTitle>בחר פריטים כלליים לרכישה</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
           סמן את הפריטים הרלוונטיים ועדכן כמויות. הפריטים מסונכרנים מההיסטוריה שלך.
         </Typography>
@@ -172,7 +192,7 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
           ))}
         </List>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ padding: '15px', gap: 2, flexShrink: 0, alignSelf: { xs: 'flex-end', sm: 'end' } }}>
         <Button onClick={onClose} variant="outlined" color="secondary">
           ביטול
         </Button>
