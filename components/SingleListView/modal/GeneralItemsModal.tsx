@@ -32,7 +32,7 @@ type AllItems = {
 };
 
 export default function GeneralItemsModal({ open, onClose }: Props) {
-  const { addItemToList, activeListId, activeList, updateItemQuantity, deleteItem, toggleItem } =
+  const { addItemToList, activeListId, activeList, updateItemQuantity, updateItemCheckedAndQuantity, toggleItem } =
     useContext(ShopSmartContext);
   const { user } = useContext(UserContext);
   const [allItems, setAllItems] = useState<AllItems[]>(null);
@@ -84,24 +84,27 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
 
   const handleUpdate = () => {
     Object.entries(existsItems as Record<string, { checked: boolean; quantity: number; groupId: string }>).forEach(
-      ([name, value]) => {
+      async ([name, value]) => {
         const activeListItem = activeList?.items.find((item) => item.name === name);
         if (activeListItem) {
           if (!activeListItem.isChecked && !value.checked) {
             return;
           }
-          if (!activeListItem.isChecked && value.checked) {
-            updateItemQuantity(activeListId!, activeListItem.id, value.quantity);
+          if (!activeListItem.isChecked && value.checked && activeListItem.quantity !== value.quantity) {
+            await updateItemQuantity(activeListId!, activeListItem, value.quantity);
             return;
           }
           if (activeListItem.isChecked && value.checked) {
-            toggleItem(activeListId!, activeListItem);
-            updateItemQuantity(activeListId!, activeListItem.id, value.quantity);
+            if (activeListItem.quantity !== value.quantity) {
+              updateItemCheckedAndQuantity(activeListId!, activeListItem, !activeListItem.isChecked, value.quantity);
+            } else {
+              await toggleItem(activeListId!, activeListItem);
+            }
             return;
           }
         }
         const timeStamp = Date.now().toString();
-        addItemToList(activeListId!, {
+        await addItemToList(activeListId!, {
           id: timeStamp,
           name,
           groupId: value.groupId,
@@ -131,7 +134,10 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
 
   const handleQuantityChange = (item: ProductCacheItem, newQuantity: number) => {
     if (existsItems[item.name]) {
-      existsItems[item.name].quantity = newQuantity;
+      setExistsItems((prev) => ({
+        ...prev,
+        [item.name]: { ...prev[item.name], quantity: newQuantity },
+      }));
     }
   };
   if (!allItems || !existsItems) return null;

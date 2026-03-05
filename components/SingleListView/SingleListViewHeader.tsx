@@ -28,25 +28,23 @@ export default function SingleListViewHeader({ onOpenSettings, GroupedItems }: P
 
   return (
     <header className="bg-white shadow-sm top-0 z-10 relative">
+      <h1 className="text-lg font-bold text-gray-800 truncate flex-1 text-center mx-2">{activeList?.name}</h1>
       <GeneralItemsModal open={showGeneralModal} onClose={() => setShowGeneralModal(false)} />
       <div className="flex items-center justify-between p-4">
         <IconButton onClick={handleBack} className="p-2 -ml-2 rtl:-mr-2 text-gray-600 hover:bg-gray-100 rounded-full">
           <ArrowLeftIcon />
         </IconButton>
-        <h1 className="text-lg font-bold text-gray-800 truncate flex-1 text-center mx-2">{activeList?.name}</h1>
-        <div className="flex gap-2">
-          <IconButton
-            title="הוסף פריטים כלליים"
-            onClick={() => setShowGeneralModal(true)} //temporray disabled till we fix it!
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-          >
-            <ChecklistRtlIcon />
-            <span style={{ marginRight: 8, fontSize: '0.95rem' }}>פריטים שאני קונה בד"כ</span>
-          </IconButton>
-          <IconButton onClick={onOpenSettings} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
-            <SettingsIcon />
-          </IconButton>
-        </div>
+        <IconButton
+          title="הוסף פריטים כלליים"
+          onClick={() => setShowGeneralModal(true)} //temporray disabled till we fix it!
+          className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+        >
+          <ChecklistRtlIcon />
+          <span style={{ marginRight: 8, fontSize: '0.95rem' }}>פריטים שאני קונה בד"כ</span>
+        </IconButton>
+        <IconButton onClick={onOpenSettings} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+          <SettingsIcon />
+        </IconButton>
       </div>
     </header>
   );

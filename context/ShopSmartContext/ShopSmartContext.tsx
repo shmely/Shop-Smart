@@ -241,6 +241,17 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
     }
   };
 
+  const updateItemCheckedAndQuantity = async (listId: string, item: ListItem, checked: boolean, quantity: number) => {
+  const listRef = getListRef(listId);
+  const listSnap = await getDocumentSnapshot(listRef);
+  if (listSnap.exists()) {
+    const newItems = listSnap.data().items.map((i: ListItem) =>
+      i.id === item.id ? { ...i, isChecked: checked, quantity } : i
+    );
+    await updateListItems(listRef, newItems);
+  }
+};
+
   const addListMemberByEmail = async (email: string): Promise<boolean> => {
     if (!activeListId || !activeList) {
       console.log('No active list selected.');
@@ -276,6 +287,7 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
         deleteItem,
         updateItemQuantity,
         addListMemberByEmail,
+        updateItemCheckedAndQuantity
       }}
     >
       {children}

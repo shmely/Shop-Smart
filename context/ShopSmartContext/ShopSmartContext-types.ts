@@ -9,6 +9,7 @@ export type ShopSmartContextType = {
     removeListMember: (listId: string, memberUid: string) => Promise<void>;
     createNewList: (name: string, activeUser: User) => Promise<void>;
     updateItemQuantity: (listId: string, itemToUpdate: ListItem, newQuantity: number) => Promise<void>;
+    updateItemCheckedAndQuantity: (listId: string, itemToUpdate: ListItem, checked: boolean, quantity: number) => Promise<void>;
     toggleItem: (listId: string, itemToUpdate: ListItem) => Promise<void>;
     deleteAllDoneItems: (listId: string) => Promise<void>;
     addItemToList: (listId: string, newItem: ListItem) => Promise<void>;
