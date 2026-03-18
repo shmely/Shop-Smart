@@ -40,6 +40,11 @@ class ListSpecificProductCacheService {
     if (!this.activeListId) return;
     const normalizedName = this.normalizeName(name);
     const trimmedName = name.trim();
+    const foundItemInCache = this.searchSimilar(name);
+    if (foundItemInCache) {
+      console.log(`Product "${name}" is similar to "${foundItemInCache.name}" in cache. Skipping add.`);
+      return;
+    }
     await addProductToCache(this.activeListId, normalizedName, trimmedName, groupId);
   }
 

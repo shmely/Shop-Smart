@@ -41,7 +41,7 @@ export function useItems() {
     const detectedGroupId = await categorizeItem(currentText, lang);
 
     const newItem: ListItem = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: currentText,
       groupId: detectedGroupId,
       isChecked: false,

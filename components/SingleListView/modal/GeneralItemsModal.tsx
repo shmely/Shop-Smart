@@ -36,10 +36,7 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
     useContext(ShopSmartContext);
   const { user } = useContext(UserContext);
   const [allItems, setAllItems] = useState<AllItems[]>(null);
-  const [existsItems, setExistsItems] = useState<Record<
-    string,
-    { checked: boolean; quantity: number; groupId: string }
-  > | null>(null);
+  const [existsItems, setExistsItems] = useState<Record<string, ShoppingListItem> | null>(null);
   useEffect(() => {
     if (!open) return;
     const cache = FirebaseProductCacheService['getActiveCache']?.().values();
@@ -82,30 +79,41 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
     );
   }
 
-  const handleUpdate = () => {
-    Object.entries(existsItems as Record<string, { checked: boolean; quantity: number; groupId: string }>).forEach(
-      async ([name, value]) => {
-        const activeListItem = activeList?.items.find((item) => item.name === name);
-        if (activeListItem) {
-          if (!activeListItem.isChecked && !value.checked) {
-            return;
-          }
-          if (!activeListItem.isChecked && value.checked && activeListItem.quantity !== value.quantity) {
-            await updateItemQuantity(activeListId!, activeListItem, value.quantity);
-            return;
-          }
-          if (activeListItem.isChecked && value.checked) {
-            if (activeListItem.quantity !== value.quantity) {
-              updateItemCheckedAndQuantity(activeListId!, activeListItem, !activeListItem.isChecked, value.quantity);
-            } else {
-              await toggleItem(activeListId!, activeListItem);
-            }
-            return;
-          }
+  const handleUpdate = async () => {
+    const itemsToAdd: ShoppingListItem[] = [];
+    const itemsToUpdate: { item: ShoppingListItem; quantity: number }[] = [];
+    const itemsToToggle: ShoppingListItem[] = [];
+    const itemsToUpdateCheckedAndQuantity: { item: ShoppingListItem; checked: boolean; quantity: number }[] = [];
+    for (const [name, value] of Object.entries(existsItems as Record<string, ShoppingListItem>)) {
+      const activeListItem = activeList?.items.find((item) => item.name === name);
+      if (activeListItem) {
+        if (!activeListItem.isChecked && !value.isChecked) {
+          continue;
         }
-        const timeStamp = Date.now().toString();
-        await addItemToList(activeListId!, {
-          id: timeStamp,
+        if (!activeListItem.isChecked && value.isChecked && activeListItem.quantity !== value.quantity) {
+          itemsToUpdateCheckedAndQuantity.push({
+            item: activeListItem,
+            checked: !activeListItem.isChecked,
+            quantity: value.quantity,
+          });
+          continue;
+        }
+        if (activeListItem.isChecked && value.isChecked) {
+          if (activeListItem.quantity !== value.quantity) {
+            itemsToUpdateCheckedAndQuantity.push({
+              item: activeListItem,
+              checked: !activeListItem.isChecked,
+              quantity: value.quantity,
+            });
+          } else {
+            itemsToToggle.push(activeListItem);
+          }
+          continue;
+        }
+      } else {
+        const timeStamp = Date.now();
+        itemsToAdd.push({
+          id: crypto.randomUUID(),
           name,
           groupId: value.groupId,
           isChecked: false,
@@ -114,7 +122,19 @@ export default function GeneralItemsModal({ open, onClose }: Props) {
           quantity: value.quantity,
         });
       }
-    );
+    }
+    for (const { item, quantity } of itemsToUpdate) {
+      await updateItemQuantity(activeListId!, item, quantity);
+    }
+    for (const { item, checked, quantity } of itemsToUpdateCheckedAndQuantity) {
+      await updateItemCheckedAndQuantity(activeListId!, item, checked, quantity);
+    }
+    for (const item of itemsToToggle) {
+      await toggleItem(activeListId!, item);
+    }
+    for (const item of itemsToAdd) {
+      await addItemToList(activeListId!, item);
+    }
     onClose();
   };
 

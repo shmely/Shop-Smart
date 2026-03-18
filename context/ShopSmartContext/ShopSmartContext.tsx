@@ -180,7 +180,6 @@ export function ShopSmartProvider({ children }: ShopSmartProviderProps) {
       try {
         // This call saves the product's name and category to the cache for future use.
         await FirebaseProductCacheService.addProduct(item.name, item.groupId);
-        console.log(`Product "${item.name}" added to cache for list ${listId}.`);
       } catch (error) {
         console.error('Failed to update product cache:', error);
       }

@@ -193,6 +193,7 @@ export const addProductToCache = async (
         groupId: groupId,
         addedAt: Timestamp.now(),
     });
+    console.log(`Product "${itemName}" added to cache for list ${listId}.`);
 };
 
 export const subscribeToProductCache = (
